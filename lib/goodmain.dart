@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data'; // Importar el paquete para usar Uint8List
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -29,8 +28,7 @@ class _MyHomePageState extends State<MyHomePage> {
       'https://ejemplosimple.azurewebsites.net'; // Dirección de la API
   TextEditingController responseController = TextEditingController();
   File? selectedImage;
-  Uint8List?
-      processedImageData; // Usaremos Uint8List para almacenar los bytes de la imagen procesada.
+  File? processedImage;
   String errorMessage = '';
 
   Future<void> _getMethod() async {
@@ -62,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (pickedFile != null) {
       setState(() {
         selectedImage = File(pickedFile.path);
-        processedImageData =
+        processedImage =
             null; // Resetea la imagen procesada cuando se selecciona una nueva imagen.
         errorMessage = '';
       });
@@ -97,8 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
         var responseData = await response.stream.toBytes();
         setState(() {
           errorMessage = '';
-          processedImageData =
-              responseData; // Almacenar los bytes de la imagen procesada.
+          processedImage = File.fromRawPath(responseData);
         });
       } else {
         setState(() {
@@ -117,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       responseController.clear();
       selectedImage = null;
-      processedImageData = null;
+      processedImage = null;
       errorMessage = '';
     });
   }
@@ -188,9 +185,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Text('Ejecutar POST'),
                       ),
                       SizedBox(height: 20),
-                      processedImageData != null
-                          ? Image.memory(
-                              processedImageData!,
+                      processedImage != null
+                          ? Image.file(
+                              processedImage!,
                               height: 100,
                               width: 100,
                             )
