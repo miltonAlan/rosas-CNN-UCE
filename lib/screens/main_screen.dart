@@ -1,6 +1,10 @@
-import 'package:ejemplo/screens/login_screen.dart';
-import 'package:ejemplo/screens/register_screen.dart';
+import 'package:ejemplo/screens/capture_image_screen.dart';
+import 'package:ejemplo/screens/measurement_screen.dart';
+import 'package:ejemplo/screens/select_image_screen.dart';
 import 'package:flutter/material.dart';
+
+// Agrega la importación de la pantalla AuthScreen si aún no lo has hecho.
+import 'package:ejemplo/screens/auth_screen.dart';
 
 class MainScreen extends StatelessWidget {
   @override
@@ -24,26 +28,36 @@ class MainScreen extends StatelessWidget {
         child: ListView(
           children: [
             DrawerHeader(
-              child: Text('Welcome to the App'),
+              child: Text('Bienvenido a la aplicación'),
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,
               ),
             ),
             ListTile(
-              title: Text('Login'),
+              title: Text('Carga imágenes desde cámara/galería'),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                  MaterialPageRoute(builder: (context) => CaptureImageScreen()),
                 );
               },
             ),
             ListTile(
-              title: Text('Register'),
+              title: Text('Pantalla de resultados'),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => RegisterScreen()),
+                  MaterialPageRoute(builder: (context) => MeasurementScreen()),
+                );
+              },
+            ),
+            // Nueva opción para la pantalla de autenticación
+            ListTile(
+              title: Text('Cerrar Sesión'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AuthScreen()),
                 );
               },
             ),

@@ -8,6 +8,8 @@ class AuthScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Authentication'),
+        automaticallyImplyLeading:
+            false, // Esta línea eliminará la flecha de regreso
       ),
       body: SingleChildScrollView(
         // Agregamos SingleChildScrollView aquí
