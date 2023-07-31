@@ -1,24 +1,14 @@
+import 'package:ejemplo/providers/counter_model.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ejemplo/screens/auth_screen.dart';
 import 'package:ejemplo/screens/capture_image_screen.dart';
-import 'package:flutter/material.dart';
 
-class MeasurementScreen extends StatefulWidget {
-  @override
-  _MeasurementScreenState createState() => _MeasurementScreenState();
-}
-
-class _MeasurementScreenState extends State<MeasurementScreen> {
-  int _counter = 0; // Contador inicializado en 0
-  String _currentPage = '/measurement'; // Página actual
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
+class MeasurementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final counterModel = context.watch<CounterModel>();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Pantalla de Medición'),
@@ -61,7 +51,7 @@ class _MeasurementScreenState extends State<MeasurementScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Contador: $_counter',
+              'Contador: ${counterModel.counter}',
               style: TextStyle(fontSize: 24),
             ),
             SizedBox(height: 16),
@@ -71,7 +61,7 @@ class _MeasurementScreenState extends State<MeasurementScreen> {
       ),
       // Botón para incrementar el contador en medio de la pantalla
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: counterModel.increment,
         tooltip: 'Incrementar',
         child: Icon(Icons.add),
       ),
@@ -79,14 +69,9 @@ class _MeasurementScreenState extends State<MeasurementScreen> {
   }
 
   void _onOptionSelected(BuildContext context, String route, Widget screen) {
-    if (_currentPage != route) {
-      setState(() {
-        _currentPage = route;
-      });
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => screen),
-      );
+    final currentPage = ModalRoute.of(context)?.settings.name;
+    if (currentPage != route) {
+      Navigator.pushReplacementNamed(context, route);
     } else {
       Navigator.pop(context); // Cerrar el Drawer si la pantalla es la actual
     }

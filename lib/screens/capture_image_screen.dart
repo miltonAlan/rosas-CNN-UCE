@@ -1,7 +1,10 @@
+import 'package:ejemplo/providers/captured_images_model.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
+// Importa la clase del modelo para manejar el estado de las imágenes
 import 'package:ejemplo/screens/auth_screen.dart';
 import 'package:ejemplo/screens/measurement_screen.dart';
 
@@ -11,13 +14,13 @@ class CaptureImageScreen extends StatefulWidget {
 }
 
 class _CaptureImageScreenState extends State<CaptureImageScreen> {
-  List<String> _capturedImages = [];
-  String initialRoute = '/capture'; // Ruta inicial de la aplicación
   String _currentPage = '/capture'; // Página actual
 
   @override
   Widget build(BuildContext context) {
-    bool hasImages = _capturedImages.isNotEmpty;
+    // Obtiene el modelo de estado de imágenes capturadas usando Provider
+    final capturedImagesModel = Provider.of<CapturedImagesModel>(context);
+    bool hasImages = capturedImagesModel.capturedImages.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -71,15 +74,15 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
         ),
       ),
       body: Center(
-        child: _capturedImages.isEmpty
+        child: capturedImagesModel.capturedImages.isEmpty
             ? Text('No se ha capturado ninguna imagen')
             : GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                 ),
-                itemCount: _capturedImages.length,
+                itemCount: capturedImagesModel.capturedImages.length,
                 itemBuilder: (context, index) {
-                  String imagePath = _capturedImages[index];
+                  String imagePath = capturedImagesModel.capturedImages[index];
                   String fileName = _getFileName(imagePath);
 
                   return Stack(
@@ -138,9 +141,9 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     final pickedFile = await imagePicker.getImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
-      setState(() {
-        _capturedImages.add(pickedFile.path);
-      });
+      // Agrega la imagen capturada al modelo de estado usando Provider
+      Provider.of<CapturedImagesModel>(context, listen: false)
+          .addCapturedImage(pickedFile.path);
     }
   }
 
@@ -149,9 +152,9 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     final pickedFile = await imagePicker.getImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      setState(() {
-        _capturedImages.add(pickedFile.path);
-      });
+      // Agrega la imagen seleccionada de la galería al modelo de estado usando Provider
+      Provider.of<CapturedImagesModel>(context, listen: false)
+          .addCapturedImage(pickedFile.path);
     }
   }
 
@@ -160,9 +163,9 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
   }
 
   void _removeImage(int index) {
-    setState(() {
-      _capturedImages.removeAt(index);
-    });
+    // Elimina la imagen del modelo de estado usando Provider
+    Provider.of<CapturedImagesModel>(context, listen: false)
+        .removeCapturedImage(index);
   }
 
   void _processImages() async {
