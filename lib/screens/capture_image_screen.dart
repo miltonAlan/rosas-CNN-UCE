@@ -1,8 +1,9 @@
-import 'package:ejemplo/screens/auth_screen.dart';
-import 'package:ejemplo/screens/measurement_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+
+import 'package:ejemplo/screens/auth_screen.dart';
+import 'package:ejemplo/screens/measurement_screen.dart';
 
 class CaptureImageScreen extends StatefulWidget {
   @override
@@ -11,11 +12,12 @@ class CaptureImageScreen extends StatefulWidget {
 
 class _CaptureImageScreenState extends State<CaptureImageScreen> {
   List<String> _capturedImages = [];
+  String initialRoute = '/capture'; // Ruta inicial de la aplicación
+  String _currentPage = '/capture'; // Página actual
 
   @override
   Widget build(BuildContext context) {
-    bool hasImages =
-        _capturedImages.isNotEmpty; // Verificar si hay imágenes capturadas
+    bool hasImages = _capturedImages.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -47,22 +49,15 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
             ListTile(
               title: Text('Carga imágenes desde cámara/galería'),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CaptureImageScreen()),
-                );
+                _onOptionSelected(context, '/capture', CaptureImageScreen());
               },
             ),
             ListTile(
               title: Text('Pantalla de resultados'),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MeasurementScreen()),
-                );
+                _onOptionSelected(context, '/measurement', MeasurementScreen());
               },
             ),
-            // Nueva opción para la pantalla de autenticación
             ListTile(
               title: Text('Cerrar Sesión'),
               onTap: () {
@@ -75,12 +70,10 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
           ],
         ),
       ),
-      // Agrega el AppDrawer como el drawer de la pantalla
       body: Center(
         child: _capturedImages.isEmpty
             ? Text('No se ha capturado ninguna imagen')
             : GridView.builder(
-                // Mostrar las miniaturas de las imágenes capturadas en un GridView
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                 ),
@@ -134,54 +127,45 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
               ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: hasImages
-            ? _processImages
-            : null, // Habilitar o deshabilitar el botón
+        onPressed: hasImages ? _processImages : null,
         label: Text('Procesar Imágenes'),
       ),
     );
   }
 
-  // Método para abrir la cámara y tomar una fotografía
   Future<void> _openCamera() async {
     final imagePicker = ImagePicker();
     final pickedFile = await imagePicker.getImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
       setState(() {
-        _capturedImages.add(pickedFile
-            .path); // Agregar la ruta de la imagen capturada a la lista
+        _capturedImages.add(pickedFile.path);
       });
     }
   }
 
-  // Método para seleccionar una foto desde la galería
   Future<void> _pickImageFromGallery() async {
     final imagePicker = ImagePicker();
     final pickedFile = await imagePicker.getImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
-        _capturedImages.add(pickedFile
-            .path); // Agregar la ruta de la imagen seleccionada a la lista
+        _capturedImages.add(pickedFile.path);
       });
     }
   }
 
-  // Método para obtener el nombre del archivo a partir de la ruta completa
   String _getFileName(String path) {
     return path.split('/').last;
   }
 
-  // Método para eliminar una imagen de la lista _capturedImages
   void _removeImage(int index) {
     setState(() {
       _capturedImages.removeAt(index);
     });
   }
 
-  // Método para simular el procesamiento de imágenes
-  Future<void> _processImages() async {
+  void _processImages() async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -201,13 +185,17 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     // Ejemplo: await _uploadImagesToServer();
   }
 
-  // Método para invocar una API ficticia
-  // Descomentar esta sección para usar una API real
-  // Future<void> _uploadImagesToServer() async {
-  //   // Aquí iría la lógica para invocar la API
-  //   // Por ejemplo:
-  //   // Realizar una petición HTTP a la API con las imágenes capturadas
-  //   // Procesar la respuesta de la API
-  //   // Actualizar el estado de la aplicación según la respuesta
-  // }
+  void _onOptionSelected(BuildContext context, String route, Widget screen) {
+    if (_currentPage != route) {
+      setState(() {
+        _currentPage = route;
+      });
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => screen),
+      );
+    } else {
+      Navigator.pop(context); // Cerrar el Drawer si la pantalla es la actual
+    }
+  }
 }
