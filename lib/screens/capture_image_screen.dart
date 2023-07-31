@@ -1,10 +1,12 @@
-import 'package:ejemplo/providers/captured_images_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart'; // Agrega esta línea
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:multi_image_picker/multi_image_picker.dart';
+import 'dart:typed_data';
 
-// Importa la clase del modelo para manejar el estado de las imágenes
+import 'package:ejemplo/providers/captured_images_model.dart';
 import 'package:ejemplo/screens/auth_screen.dart';
 import 'package:ejemplo/screens/measurement_screen.dart';
 
@@ -14,11 +16,10 @@ class CaptureImageScreen extends StatefulWidget {
 }
 
 class _CaptureImageScreenState extends State<CaptureImageScreen> {
-  String _currentPage = '/capture'; // Página actual
+  String _currentPage = '/capture';
 
   @override
   Widget build(BuildContext context) {
-    // Obtiene el modelo de estado de imágenes capturadas usando Provider
     final capturedImagesModel = Provider.of<CapturedImagesModel>(context);
     bool hasImages = capturedImagesModel.capturedImages.isNotEmpty;
 
@@ -33,8 +34,10 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
                 onPressed: _openCamera,
               ),
               IconButton(
-                icon: Icon(Icons.photo_library),
-                onPressed: _pickImageFromGallery,
+                icon: Icon(Icons
+                    .collections), // Icono de visto para cargar múltiples imágenes
+                onPressed:
+                    _pickMultipleImagesFromGallery, // Agregamos la función para cargar múltiples imágenes
               ),
             ],
           ),
@@ -141,21 +144,61 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     final pickedFile = await imagePicker.getImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
-      // Agrega la imagen capturada al modelo de estado usando Provider
       Provider.of<CapturedImagesModel>(context, listen: false)
           .addCapturedImage(pickedFile.path);
     }
   }
 
   Future<void> _pickImageFromGallery() async {
-    final imagePicker = ImagePicker();
-    final pickedFile = await imagePicker.getImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      // Agrega la imagen seleccionada de la galería al modelo de estado usando Provider
-      Provider.of<CapturedImagesModel>(context, listen: false)
-          .addCapturedImage(pickedFile.path);
+    List<Asset> pickedImages = [];
+    try {
+      pickedImages = await MultiImagePicker.pickImages(
+        maxImages: 99,
+        enableCamera: true,
+      );
+    } catch (e) {
+      print("Error al seleccionar imágenes: $e");
     }
+
+    if (pickedImages.isNotEmpty) {
+      List<String> imagePaths = [];
+      for (var image in pickedImages) {
+        imagePaths.add(await _getImagePath(image));
+      }
+      Provider.of<CapturedImagesModel>(context, listen: false)
+          .addCapturedImages(imagePaths);
+    }
+  }
+
+  Future<void> _pickMultipleImagesFromGallery() async {
+    List<Asset> pickedImages = [];
+    try {
+      pickedImages = await MultiImagePicker.pickImages(
+        maxImages: 5,
+        enableCamera: true,
+      );
+    } catch (e) {
+      print("Error al seleccionar imágenes: $e");
+    }
+
+    if (pickedImages.isNotEmpty) {
+      List<String> imagePaths = [];
+      for (var asset in pickedImages) {
+        imagePaths.add(await _getImagePath(asset));
+      }
+      Provider.of<CapturedImagesModel>(context, listen: false)
+          .addCapturedImages(imagePaths);
+    }
+  }
+
+  Future<String> _getImagePath(Asset asset) async {
+    ByteData byteData = await asset.getByteData();
+    List<int> imageData = byteData.buffer.asUint8List();
+    Directory tempDir = await getTemporaryDirectory();
+    String imagePath = "${tempDir.path}/${asset.name}";
+    File imageFile = File(imagePath);
+    await imageFile.writeAsBytes(imageData);
+    return imagePath;
   }
 
   String _getFileName(String path) {
@@ -163,7 +206,6 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
   }
 
   void _removeImage(int index) {
-    // Elimina la imagen del modelo de estado usando Provider
     Provider.of<CapturedImagesModel>(context, listen: false)
         .removeCapturedImage(index);
   }
@@ -180,12 +222,9 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
       ),
     );
 
-    // Simulamos una demora de 2 segundos para el procesamiento de imágenes
     await Future.delayed(Duration(seconds: 2));
 
-    Navigator.pop(context); // Cerrar el diálogo de progreso
-    // Aquí puedes incluir la llamada a una API real para procesar las imágenes capturadas
-    // Ejemplo: await _uploadImagesToServer();
+    Navigator.pop(context);
   }
 
   void _onOptionSelected(BuildContext context, String route, Widget screen) {
@@ -198,7 +237,7 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
         MaterialPageRoute(builder: (context) => screen),
       );
     } else {
-      Navigator.pop(context); // Cerrar el Drawer si la pantalla es la actual
+      Navigator.pop(context);
     }
   }
 }

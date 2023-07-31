@@ -10,8 +10,18 @@ class CapturedImagesModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addCapturedImages(List<String> imagePaths) {
+    _capturedImages.addAll(imagePaths);
+    notifyListeners();
+  }
+
   void removeCapturedImage(int index) {
     _capturedImages.removeAt(index);
+    notifyListeners();
+  }
+
+  void clearCapturedImages() {
+    _capturedImages.clear();
     notifyListeners();
   }
 }
