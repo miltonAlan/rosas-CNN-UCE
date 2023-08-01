@@ -174,7 +174,7 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     List<Asset> pickedImages = [];
     try {
       pickedImages = await MultiImagePicker.pickImages(
-        maxImages: 5,
+        maxImages: 99,
         enableCamera: true,
       );
     } catch (e) {
