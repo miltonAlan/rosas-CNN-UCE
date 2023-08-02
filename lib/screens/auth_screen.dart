@@ -3,39 +3,41 @@ import 'package:ejemplo/screens/login_screen.dart';
 import 'package:ejemplo/screens/register_screen.dart';
 
 class AuthScreen extends StatelessWidget {
+  final String iconImagePath = 'assets/icono.png'; // Ruta del icono
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Authentication'),
-        automaticallyImplyLeading:
-            false, // Esta línea eliminará la flecha de regreso
+        title: Text('Autenticarse'),
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
-        // Agregamos SingleChildScrollView aquí
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ElevatedButton(
+              ElevatedButton.icon(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => LoginScreen()),
                   );
                 },
-                child: Text('Login'),
+                icon: Icon(Icons.login), // Icono para el botón
+                label: Text('Ingresar'),
               ),
               SizedBox(height: 16),
-              ElevatedButton(
+              ElevatedButton.icon(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => RegisterScreen()),
                   );
                 },
-                child: Text('Register'),
+                icon: Icon(Icons.person_add), // Icono para el botón
+                label: Text('Registrarse'),
               ),
             ],
           ),

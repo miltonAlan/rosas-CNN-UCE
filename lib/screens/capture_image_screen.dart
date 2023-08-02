@@ -1,10 +1,11 @@
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart'; // Agrega esta línea
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'dart:typed_data';
+import 'package:http/http.dart' as http;
 
 import 'package:ejemplo/providers/captured_images_model.dart';
 import 'package:ejemplo/screens/auth_screen.dart';
@@ -17,6 +18,8 @@ class CaptureImageScreen extends StatefulWidget {
 
 class _CaptureImageScreenState extends State<CaptureImageScreen> {
   String _currentPage = '/capture';
+  bool _isProcessing = false;
+  List<String> processedImagePaths = [];
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +37,8 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
                 onPressed: _openCamera,
               ),
               IconButton(
-                icon: Icon(Icons
-                    .collections), // Icono de visto para cargar múltiples imágenes
-                onPressed:
-                    _pickMultipleImagesFromGallery, // Agregamos la función para cargar múltiples imágenes
+                icon: Icon(Icons.collections),
+                onPressed: _pickMultipleImagesFromGallery,
               ),
             ],
           ),
@@ -132,9 +133,37 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
                 },
               ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: hasImages ? _processImages : null,
-        label: Text('Procesar Imágenes'),
+      floatingActionButton: Stack(
+        children: [
+          if (_isProcessing)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black45,
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: FloatingActionButton.extended(
+              onPressed: hasImages && !_isProcessing ? _processImages : null,
+              label: _isProcessing
+                  ? SizedBox(
+                      width: 160,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('Procesando...'),
+                          SizedBox(width: 10),
+                          CircularProgressIndicator(),
+                        ],
+                      ),
+                    )
+                  : Text('Procesar Imágenes'),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -146,27 +175,6 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     if (pickedFile != null) {
       Provider.of<CapturedImagesModel>(context, listen: false)
           .addCapturedImage(pickedFile.path);
-    }
-  }
-
-  Future<void> _pickImageFromGallery() async {
-    List<Asset> pickedImages = [];
-    try {
-      pickedImages = await MultiImagePicker.pickImages(
-        maxImages: 99,
-        enableCamera: true,
-      );
-    } catch (e) {
-      print("Error al seleccionar imágenes: $e");
-    }
-
-    if (pickedImages.isNotEmpty) {
-      List<String> imagePaths = [];
-      for (var image in pickedImages) {
-        imagePaths.add(await _getImagePath(image));
-      }
-      Provider.of<CapturedImagesModel>(context, listen: false)
-          .addCapturedImages(imagePaths);
     }
   }
 
@@ -210,21 +218,63 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
         .removeCapturedImage(index);
   }
 
-  void _processImages() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text('Procesando Imágenes'),
-        content: Center(
-          child: CircularProgressIndicator(),
-        ),
-      ),
-    );
+  Future<void> _processImages() async {
+    try {
+      setState(() {
+        _isProcessing = true;
+      });
 
-    await Future.delayed(Duration(seconds: 2));
+      final capturedImagesModel =
+          Provider.of<CapturedImagesModel>(context, listen: false);
+      processedImagePaths = [];
 
-    Navigator.pop(context);
+      for (String imagePath in capturedImagesModel.capturedImages) {
+        File imageFile = File(imagePath);
+        if (imageFile.existsSync()) {
+          String processedImagePath = await _processImage(imageFile);
+          processedImagePaths.add(processedImagePath);
+        }
+      }
+
+      capturedImagesModel.clearCapturedImages();
+      capturedImagesModel.addCapturedImages(processedImagePaths);
+
+      setState(() {
+        _isProcessing = false;
+      });
+
+      _showProcessedMessage(context); // Mostrar el mensaje aquí
+    } catch (error) {
+      print("Error al procesar imágenes: $error");
+    }
+  }
+
+  Future<String> _processImage(File imageFile) async {
+    final apiUrl = 'https://ejemplosimple.azurewebsites.net/invert';
+
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+      request.files
+          .add(await http.MultipartFile.fromPath('img', imageFile.path));
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200) {
+        final processedImageBytes = await response.stream.toBytes();
+        Directory tempDir = await getTemporaryDirectory();
+        String processedImagePath =
+            "${tempDir.path}/${DateTime.now().toString()}.png";
+        File processedImageFile = File(processedImagePath);
+        await processedImageFile.writeAsBytes(processedImageBytes);
+
+        return processedImagePath;
+      } else {
+        throw Exception('Error en la petición de la API');
+      }
+    } catch (e) {
+      print("Error al procesar imagen: $e");
+      throw Exception('Error en la petición de la API');
+    }
   }
 
   void _onOptionSelected(BuildContext context, String route, Widget screen) {
@@ -239,5 +289,25 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     } else {
       Navigator.pop(context);
     }
+  }
+
+  void _showProcessedMessage(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Imágenes Procesadas'),
+          content: Text('Dirígete hacia la pantalla de Resultados'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
