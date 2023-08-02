@@ -62,9 +62,10 @@ class MeasurementScreen extends StatelessWidget {
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                 ),
-                itemCount: capturedImagesModel.capturedImages.length,
+                itemCount: capturedImagesModel.capturedImagesProcessed.length,
                 itemBuilder: (context, index) {
-                  String imagePath = capturedImagesModel.capturedImages[index];
+                  String imagePath =
+                      capturedImagesModel.capturedImagesProcessed[index];
                   return GestureDetector(
                     onTap: () {
                       _showImageDetail(context, imagePath);

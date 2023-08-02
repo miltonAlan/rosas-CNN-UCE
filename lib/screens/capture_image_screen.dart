@@ -228,16 +228,16 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
           Provider.of<CapturedImagesModel>(context, listen: false);
       processedImagePaths = [];
 
+      capturedImagesModel
+          .clearCapturedImagesProcessed(); // Vaciar la nueva lista de imágenes procesadas
       for (String imagePath in capturedImagesModel.capturedImages) {
         File imageFile = File(imagePath);
         if (imageFile.existsSync()) {
           String processedImagePath = await _processImage(imageFile);
-          processedImagePaths.add(processedImagePath);
+          capturedImagesModel.addCapturedImageProcessed(
+              processedImagePath); // Agregar a la nueva lista
         }
       }
-
-      capturedImagesModel.clearCapturedImages();
-      capturedImagesModel.addCapturedImages(processedImagePaths);
 
       setState(() {
         _isProcessing = false;
