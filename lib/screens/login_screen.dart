@@ -12,7 +12,8 @@ class LoginScreen extends StatelessWidget {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
-    if (email == 'admin' && password == 'admin') {
+    if ((email == 'admin' && password == 'admin') ||
+        (email.isEmpty && password.isEmpty)) {
       // Simulate login delay (You can replace this with actual API call)
       showDialog(
         context: context,
