@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'dart:convert'; // Asegúrate de agregar esta línea
 
 import 'package:ejemplo/providers/captured_images_model.dart';
 import 'package:ejemplo/screens/auth_screen.dart';
@@ -233,9 +234,10 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
       for (String imagePath in capturedImagesModel.capturedImages) {
         File imageFile = File(imagePath);
         if (imageFile.existsSync()) {
-          String processedImagePath = await _processImage(imageFile);
-          capturedImagesModel.addCapturedImageProcessed(
-              processedImagePath); // Agregar a la nueva lista
+          await _processImage(imageFile);
+          // String processedImagePath = await _processImage(imageFile);
+          // capturedImagesModel.addCapturedImageProcessed(
+          //     processedImagePath); // Agregar a la nueva lista
         }
       }
 
@@ -249,8 +251,9 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     }
   }
 
-  Future<String> _processImage(File imageFile) async {
-    final apiUrl = 'https://ejemplosimple.azurewebsites.net/invert';
+  Future<void> _processImage(File imageFile) async {
+    // final apiUrl = 'https://ejemplosimple.azurewebsites.net/invert';
+    final apiUrl = 'http://192.168.56.1:5000/propio';
 
     try {
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
@@ -258,16 +261,18 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
           .add(await http.MultipartFile.fromPath('img', imageFile.path));
 
       http.StreamedResponse response = await request.send();
+      print("API Response Status Code: ${response.statusCode}");
+
+      if (response.statusCode == 500) {
+        final responseString = await response.stream.bytesToString();
+        print("API Error Response: $responseString");
+      }
 
       if (response.statusCode == 200) {
-        final processedImageBytes = await response.stream.toBytes();
-        Directory tempDir = await getTemporaryDirectory();
-        String processedImagePath =
-            "${tempDir.path}/${DateTime.now().toString()}.png";
-        File processedImageFile = File(processedImagePath);
-        await processedImageFile.writeAsBytes(processedImageBytes);
+        final responseString = await response.stream.bytesToString();
+        final jsonResponse = json.decode(responseString);
 
-        return processedImagePath;
+        print("API Response JSON: $jsonResponse");
       } else {
         throw Exception('Error en la petición de la API');
       }
