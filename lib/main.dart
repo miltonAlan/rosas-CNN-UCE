@@ -5,9 +5,20 @@ import 'package:provider/provider.dart';
 import 'package:ejemplo/screens/auth_screen.dart';
 import 'package:ejemplo/screens/capture_image_screen.dart';
 import 'package:ejemplo/screens/measurement_screen.dart';
+import 'dart:io';
 
 void main() {
+  HttpOverrides.global = MyHttpOverrides();
   runApp(EjemploApp());
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
 }
 
 class EjemploApp extends StatelessWidget {

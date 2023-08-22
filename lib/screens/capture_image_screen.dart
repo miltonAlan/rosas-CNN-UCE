@@ -252,29 +252,34 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
   }
 
   Future<void> _processImage(File imageFile) async {
-    // final apiUrl = 'https://ejemplosimple.azurewebsites.net/invert';
-    final apiUrl = 'http://192.168.56.1:5000/propio';
+    // final apiUrl =
+    //     'https://1574-2800-bf0-2a7-f08-4529-dab0-724b-84ae.ngrok-free.app/propio';
+    final apiUrl = 'http://192.168.100.8:5000/propio';
 
     try {
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
       request.files
           .add(await http.MultipartFile.fromPath('img', imageFile.path));
 
-      http.StreamedResponse response = await request.send();
-      print("API Response Status Code: ${response.statusCode}");
+      // Evitar redirecciones automáticas
+      request.followRedirects = false;
 
-      if (response.statusCode == 500) {
-        final responseString = await response.stream.bytesToString();
-        print("API Error Response: $responseString");
-      }
+      var response = await request.send();
 
-      if (response.statusCode == 200) {
-        final responseString = await response.stream.bytesToString();
-        final jsonResponse = json.decode(responseString);
-
-        print("API Response JSON: $jsonResponse");
+      if (response.statusCode == 307) {
+        final redirectLocation = response.headers['location'];
+        if (redirectLocation != null) {
+          // Realizar una nueva solicitud a la ubicación de redirección
+          final redirectResponse = await http.get(Uri.parse(redirectLocation));
+          var responseString = redirectResponse.body;
+          print(
+              "API Response Status Code (After Redirect): ${redirectResponse.statusCode}");
+          print("API Response String (After Redirect): $responseString");
+        }
       } else {
-        throw Exception('Error en la petición de la API');
+        var responseString = await response.stream.bytesToString();
+        print("API Response Status Code: ${response.statusCode}");
+        print("API Response String: $responseString");
       }
     } catch (e) {
       print("Error al procesar imagen: $e");
