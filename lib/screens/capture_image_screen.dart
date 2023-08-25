@@ -229,6 +229,7 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
           Provider.of<CapturedImagesModel>(context, listen: false);
       processedImagePaths = [];
 
+      print("XXXXXX si vacia la lista");
       capturedImagesModel
           .clearCapturedImagesProcessed(); // Vaciar la nueva lista de imágenes procesadas
       for (String imagePath in capturedImagesModel.capturedImages) {
@@ -236,8 +237,8 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
         if (imageFile.existsSync()) {
           await _processImage(imageFile);
           // String processedImagePath = await _processImage(imageFile);
-          // capturedImagesModel.addCapturedImageProcessed(
-          //     processedImagePath); // Agregar a la nueva lista
+          capturedImagesModel
+              .addCapturedImageProcessed(imagePath); // Agregar a la nueva lista
         }
       }
 
