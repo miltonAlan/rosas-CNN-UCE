@@ -66,6 +66,8 @@ class MeasurementScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   String imagePath =
                       capturedImagesModel.capturedImagesProcessed[index];
+                  print("mostradas" +
+                      capturedImagesModel.capturedImagesProcessed[index]);
                   return GestureDetector(
                     onTap: () {
                       _showImageDetail(context, imagePath);

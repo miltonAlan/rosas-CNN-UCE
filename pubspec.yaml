@@ -37,6 +37,8 @@ dependencies:
   multi_image_picker: ^4.8.0
   path_provider: ^2.0.5   # Agrega esta línea
   photo_view: ^0.14.0
+  image: ^3.0.1
+
   # Agrega más dependencias aquí
 
   # The following adds the Cupertino Icons font to your application.
