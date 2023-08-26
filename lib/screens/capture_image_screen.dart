@@ -229,16 +229,18 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
           Provider.of<CapturedImagesModel>(context, listen: false);
       processedImagePaths = [];
 
-      print("XXXXXX si vacia la lista");
+      // print("XXXXXX si vacia la lista");
       capturedImagesModel
           .clearCapturedImagesProcessed(); // Vaciar la nueva lista de imágenes procesadas
       for (String imagePath in capturedImagesModel.capturedImages) {
         File imageFile = File(imagePath);
         if (imageFile.existsSync()) {
-          await _processImage(imageFile);
+          String responseString = await _processImage(imageFile);
+          // print(responseString);
+          // await _processImage(imageFile);
           // String processedImagePath = await _processImage(imageFile);
-          capturedImagesModel
-              .addCapturedImageProcessed(imagePath); // Agregar a la nueva lista
+          capturedImagesModel.addCapturedImageProcessed(
+              imagePath, responseString); // Agregar a la nueva lista
         }
       }
 
@@ -252,9 +254,7 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     }
   }
 
-  Future<void> _processImage(File imageFile) async {
-    // final apiUrl =
-    //     'https://1574-2800-bf0-2a7-f08-4529-dab0-724b-84ae.ngrok-free.app/propio';
+  Future<String> _processImage(File imageFile) async {
     final apiUrl = 'http://192.168.100.8:5000/propio';
 
     try {
@@ -262,26 +262,15 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
       request.files
           .add(await http.MultipartFile.fromPath('img', imageFile.path));
 
-      // Evitar redirecciones automáticas
       request.followRedirects = false;
 
       var response = await request.send();
 
-      if (response.statusCode == 307) {
-        final redirectLocation = response.headers['location'];
-        if (redirectLocation != null) {
-          // Realizar una nueva solicitud a la ubicación de redirección
-          final redirectResponse = await http.get(Uri.parse(redirectLocation));
-          var responseString = redirectResponse.body;
-          print(
-              "API Response Status Code (After Redirect): ${redirectResponse.statusCode}");
-          print("API Response String (After Redirect): $responseString");
-        }
-      } else {
-        var responseString = await response.stream.bytesToString();
-        print("API Response Status Code: ${response.statusCode}");
-        print("API Response String: $responseString");
-      }
+      var responseString = await response.stream.bytesToString();
+      print("API Response Status Code: ${response.statusCode}");
+      // print("API Response String: $responseString");
+
+      return responseString; // Devuelve la cadena de respuesta
     } catch (e) {
       print("Error al procesar imagen: $e");
       throw Exception('Error en la petición de la API');

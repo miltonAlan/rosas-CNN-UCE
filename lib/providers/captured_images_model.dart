@@ -1,6 +1,7 @@
 import 'package:image/image.dart' as img;
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'dart:convert'; // Importa la librería dart:convert
 
 class CapturedImagesModel extends ChangeNotifier {
   List<String> _capturedImages = [];
@@ -20,57 +21,86 @@ class CapturedImagesModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addCapturedImageProcessed(String imagePath) {
-    // _capturedImagesProcessed
-    //     .add(imagePath); // Función para agregar a la nueva lista
-    // Ruta de la imagen original
-    // String imgPath = imagePath;
-    // String imagePath = 'assets/your_image.png'; // Reemplaza con la ruta correcta
+  void _printJsonObject(Map<String, dynamic> jsonObject, [String prefix = '']) {
+    jsonObject.forEach((key, value) {
+      if (value is Map<String, dynamic>) {
+        print('$prefix$key:');
+        _printJsonObject(value, '$prefix  ');
+      } else {
+        print('$prefix$key: $value');
+      }
+    });
+  }
 
+  void addCapturedImageProcessed(String imagePath, String jsonString) {
     // Carga la imagen utilizando el paquete 'image'
     img.Image originalImage =
         img.decodeImage(File(imagePath).readAsBytesSync())!;
 
-    // Coordenadas y tamaño del cuadrado
-    // int squareX = 10;
-    // int squareY = 50;
-    // int squareSize = 300;
-    // int squareThickness = 50; // Grosor del borde del cuadrado
-    // int squareColorValue = img.getColor(
-    // 255, 0, 0); // Valor de color del cuadrado (rojo en este caso)
+    // List<RectangleParams> rectangles = [
+    //   RectangleParams(
+    //       x: 99,
+    //       y: 20,
+    //       width: 600,
+    //       height: 100,
+    //       thickness: 10,
+    //       colorValue: img.getColor(0, 0, 255),
+    //       text: 'AAAAAAAAAaa'), // Agregar el texto
+    //   RectangleParams(
+    //       x: 500,
+    //       y: 400,
+    //       width: 600,
+    //       height: 100,
+    //       thickness: 10,
+    //       colorValue: img.getColor(0, 0, 255),
+    //       text: 'BBBBBBB'), // Agregar el texto
+    // ];
+    List<dynamic> jsonArray = jsonDecode(jsonString);
 
-    // Dibuja el cuadrado en la imagen
-    // img.Image modifiedImage = drawSquareOnImage(originalImage, squareX, squareY,
-    //     squareSize, squareThickness, squareColorValue);
+    // Iterar a través de la lista y acceder a las propiedades de cada objeto JSON
+    // for (var jsonObject in jsonArray) {
+    //   _printJsonObject(jsonObject);
+    //   print('---'); // Separador entre objetos
+    // }
 
-    List<RectangleParams> rectangles = [
-      RectangleParams(
-          x: 99,
-          y: 20,
-          width: 600,
-          height: 100,
+    List<RectangleParams> rectangles =
+        []; // Crea una lista vacía para almacenar los objetos RectangleParams.
+
+    for (var jsonObject in jsonArray) {
+      String imageFilename = jsonObject['image_filename'];
+      double ratio = jsonObject['ratio'];
+
+      print('image_filename: $imageFilename');
+      print('ratio: $ratio');
+
+      List<dynamic> detections = jsonObject['detections'];
+      for (var detection in detections) {
+        List<dynamic> box = detection['box'];
+        String label = detection['label'] == "0"
+            ? "capullo"
+            : (detection['label'] == "1" ? "tallo" : "hoja");
+        double score = detection['score'];
+        // Crear un objeto RectangleParams y agregarlo a la lista rectangles.
+        RectangleParams rectangle = RectangleParams(
+          x: box[0].toInt(),
+          y: box[1].toInt(),
+          width: box[2].toInt(),
+          height: box[3].toInt(), // Asegúrate de tener el índice correcto aquí.
           thickness: 10,
           colorValue: img.getColor(0, 0, 255),
-          text: 'AAAAAAAAAaa'), // Agregar el texto
-      RectangleParams(
-          x: 500,
-          y: 400,
-          width: 600,
-          height: 100,
-          thickness: 10,
-          colorValue: img.getColor(0, 0, 255),
-          text: 'BBBBBBB'), // Agregar el texto
-      // Agrega más rectángulos según lo necesites
-    ];
+          text:
+              '$label\nlargo ${(box[3].toInt() / ratio)} \nancho ${box[2].toInt() / ratio}',
+        );
+        rectangles
+            .add(rectangle); // Agregar el objeto RectangleParams a la lista.
 
+        print('Detection:');
+        print('  box: $box');
+        print('  label: $label');
+        print('  score: $score');
+      }
+    }
     img.Image modifiedImage = drawRectanglesOnImage(originalImage, rectangles);
-    // Guarda la imagen modificada
-    // File modifiedFile = File(
-    //     'path_to_save_modified_image.png'); // Ruta donde deseas guardar la imagen
-    // modifiedFile.writeAsBytesSync(img.encodePng(modifiedImage));
-
-    // print('Imagen con cuadrado guardada correctamente.');
-    // Genera el nuevo path para la imagen modificada
     String originalFileName =
         imagePath.split('/').last; // Obtiene el nombre del archivo
     DateTime now = DateTime.now();
