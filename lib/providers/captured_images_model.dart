@@ -185,7 +185,7 @@ class CapturedImagesModel extends ChangeNotifier {
 
       // Agrega el texto en el lateral izquierdo
 
-      img.drawString(modifiedImage, img.arial_24, textX, textY, text,
+      img.drawString(modifiedImage, img.arial_48, textX, textY, text,
           color: img.getColor(0, 0, 0));
     }
 

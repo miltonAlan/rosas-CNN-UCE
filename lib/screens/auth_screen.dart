@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ejemplo/screens/login_screen.dart';
 import 'package:ejemplo/screens/register_screen.dart';
+import 'package:ejemplo/screens/config.dart'; // Importa la nueva pantalla
 
 class AuthScreen extends StatelessWidget {
   final String iconImagePath = 'assets/icono.png'; // Ruta del icono
@@ -25,7 +26,7 @@ class AuthScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => LoginScreen()),
                   );
                 },
-                icon: Icon(Icons.login), // Icono para el botón
+                icon: Icon(Icons.login),
                 label: Text('Ingresar'),
               ),
               SizedBox(height: 16),
@@ -36,8 +37,22 @@ class AuthScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => RegisterScreen()),
                   );
                 },
-                icon: Icon(Icons.person_add), // Icono para el botón
+                icon: Icon(Icons.person_add),
                 label: Text('Registrarse'),
+              ),
+              SizedBox(height: 16), // Agrega un espacio en blanco
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            ConfigScreen()), // Dirige a la pantalla de configuración
+                  );
+                },
+                icon: Icon(
+                    Icons.settings), // Icono para el botón de configuración
+                label: Text('Configuración'),
               ),
             ],
           ),

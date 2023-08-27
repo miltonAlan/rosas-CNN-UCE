@@ -1,3 +1,4 @@
+import 'package:ejemplo/screens/text_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
@@ -255,8 +256,14 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
   }
 
   Future<String> _processImage(File imageFile) async {
-    final apiUrl = 'http://192.168.100.8:5000/propio';
-
+    final apiRuta = '/propio';
+    final testResultProvider =
+        Provider.of<TestResultProvider>(context, listen: false);
+    String url = testResultProvider.text; // Acceder a _testResult
+    final apiUrl = url + apiRuta;
+    print('URLXXXXXXXXXXXXx' + url);
+    print('apirutaXXXXXXXXXXXXx' + apiRuta);
+    print("apiUrlXXXXXXXXx: " + apiUrl);
     try {
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
       request.files
