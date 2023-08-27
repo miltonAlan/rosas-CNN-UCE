@@ -11,7 +11,7 @@ class ConfigScreen extends StatelessWidget {
         Provider.of<TestResultProvider>(context, listen: false);
 
     String url = _urlController.text;
-
+    print("XXXXXXXXXjXX" + url);
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
