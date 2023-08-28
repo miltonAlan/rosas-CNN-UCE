@@ -1,7 +1,10 @@
+import 'package:ejemplo/screens/text_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:ejemplo/providers/captured_images_model.dart';
 import 'package:ejemplo/providers/counter_model.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+// import 'package:ejemplo/providers/test_result_provider.dart'; // Asegúrate de importar TestResultProvider
 import 'package:ejemplo/screens/auth_screen.dart';
 import 'package:ejemplo/screens/capture_image_screen.dart';
 import 'package:ejemplo/screens/measurement_screen.dart';
@@ -30,8 +33,11 @@ class EjemploApp extends StatelessWidget {
           create: (_) => CounterModel(),
         ),
         ChangeNotifierProvider<CapturedImagesModel>(
-          // Añade aquí el Provider de CapturedImagesModel
           create: (_) => CapturedImagesModel(),
+        ),
+        // Agrega el provider de TestResultProvider
+        ChangeNotifierProvider<TestResultProvider>(
+          create: (_) => TestResultProvider(),
         ),
       ],
       child: MaterialApp(
@@ -39,7 +45,7 @@ class EjemploApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        initialRoute: '/auth', // Especifica la ruta inicial
+        initialRoute: '/auth',
         routes: {
           '/auth': (context) => AuthScreen(),
           '/capture': (context) => CaptureImageScreen(),

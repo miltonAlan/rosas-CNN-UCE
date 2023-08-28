@@ -33,83 +33,90 @@ class CapturedImagesModel extends ChangeNotifier {
   }
 
   void addCapturedImageProcessed(String imagePath, String jsonString) {
-    // Carga la imagen utilizando el paquete 'image'
-    img.Image originalImage =
-        img.decodeImage(File(imagePath).readAsBytesSync())!;
+    try {
+      // Carga la imagen utilizando el paquete 'image'
+      img.Image originalImage =
+          img.decodeImage(File(imagePath).readAsBytesSync())!;
 
-    List<dynamic> jsonArray = jsonDecode(jsonString);
+      List<dynamic> jsonArray = jsonDecode(jsonString);
 
-    // Iterar a través de la lista y acceder a las propiedades de cada objeto JSON
-    for (var jsonObject in jsonArray) {
-      _printJsonObject(jsonObject);
-      print('---'); // Separador entre objetos
-    }
-
-    List<RectangleParams> rectangles =
-        []; // Crea una lista vacía para almacenar los objetos RectangleParams.
-
-    for (var jsonObject in jsonArray) {
-      String imageFilename = jsonObject['image_filename'];
-      double ratio = jsonObject['ratio'].toDouble();
-
-      print('image_filename: $imageFilename');
-      print('ratio: $ratio');
-
-      List<dynamic> detections = jsonObject['detections'];
-      for (var detection in detections) {
-        List<dynamic> box = detection['box'];
-        String label = detection['label'] == "0"
-            ? "capullo"
-            : (detection['label'] == "1" ? "tallo" : "hoja");
-        String placeEtiqueta = label == "capullo"
-            ? "izquierda"
-            : (label == "tallo" ? "inferior" : "derecha");
-
-        double score = detection['score'];
-
-        int colorValueTernario = label == "tallo"
-            ? img.getColor(255, 0, 0)
-            : (label == "capullo"
-                ? img.getColor(0, 0, 255)
-                : img.getColor(0, 255, 0));
-        String text = label == "tallo"
-            ? 'Tallo: \nlargo: ${(box[3].toInt() / ratio).toStringAsFixed(1)} cm'
-            : (label == "capullo"
-                ? 'Capullo: \nlargo: ${(box[3].toInt() / ratio).toStringAsFixed(1)} cm \nancho: ${(box[2].toInt() / ratio).toStringAsFixed(1)} cm'
-                : '');
-        // Crear un objeto RectangleParams y agregarlo a la lista rectangles.
-        RectangleParams rectangle = RectangleParams(
-          x: box[0].toInt(),
-          y: box[1].toInt(),
-          width: box[2].toInt(),
-          height: box[3].toInt(), // Asegúrate de tener el índice correcto aquí.
-          thickness: 10,
-          place: placeEtiqueta,
-          colorValue: colorValueTernario,
-          text: text,
-        );
-        rectangles
-            .add(rectangle); // Agregar el objeto RectangleParams a la lista.
-
-        print('Detection:');
-        print('  box: $box');
-        print('  label: $label');
-        print('  score: $score');
+      // Iterar a través de la lista y acceder a las propiedades de cada objeto JSON
+      for (var jsonObject in jsonArray) {
+        _printJsonObject(jsonObject);
+        print('---'); // Separador entre objetos
       }
+
+      List<RectangleParams> rectangles =
+          []; // Crea una lista vacía para almacenar los objetos RectangleParams.
+
+      for (var jsonObject in jsonArray) {
+        String imageFilename = jsonObject['image_filename'];
+        double ratio = jsonObject['ratio'].toDouble();
+
+        print('image_filename: $imageFilename');
+        print('ratio: $ratio');
+
+        List<dynamic> detections = jsonObject['detections'];
+        for (var detection in detections) {
+          List<dynamic> box = detection['box'];
+          String label = detection['label'] == "0"
+              ? "capullo"
+              : (detection['label'] == "1" ? "tallo" : "hoja");
+          String placeEtiqueta = label == "capullo"
+              ? "izquierda"
+              : (label == "tallo" ? "izquierda" : "derecha");
+
+          double score = detection['score'];
+
+          int colorValueTernario = label == "tallo"
+              ? img.getColor(255, 0, 0)
+              : (label == "capullo"
+                  ? img.getColor(0, 0, 255)
+                  : img.getColor(0, 255, 0));
+          String text = label == "tallo"
+              ? 'Tallo: \nlargo: ${(box[3].toInt() / ratio).toStringAsFixed(1)} cm'
+              : (label == "capullo"
+                  ? 'Capullo: \nlargo: ${(box[3].toInt() / ratio).toStringAsFixed(1)} cm \nancho: ${(box[2].toInt() / ratio).toStringAsFixed(1)} cm'
+                  : '');
+          // Crear un objeto RectangleParams y agregarlo a la lista rectangles.
+          RectangleParams rectangle = RectangleParams(
+            x: box[0].toInt(),
+            y: box[1].toInt(),
+            width: box[2].toInt(),
+            height:
+                box[3].toInt(), // Asegúrate de tener el índice correcto aquí.
+            thickness: 10,
+            place: placeEtiqueta,
+            colorValue: colorValueTernario,
+            text: text,
+          );
+          rectangles
+              .add(rectangle); // Agregar el objeto RectangleParams a la lista.
+
+          print('Detection:');
+          print('  box: $box');
+          print('  label: $label');
+          print('  score: $score');
+        }
+      }
+      img.Image modifiedImage =
+          drawRectanglesOnImage(originalImage, rectangles);
+      String originalFileName =
+          imagePath.split('/').last; // Obtiene el nombre del archivo
+      DateTime now = DateTime.now();
+      String newFileName =
+          '${now.hour}-${now.minute}-${now.second}-${now.millisecond}_${originalFileName}';
+      String modifiedImagePath =
+          imagePath.replaceFirst(originalFileName, newFileName);
+
+      File(modifiedImagePath).writeAsBytesSync(img.encodePng(modifiedImage));
+
+      _capturedImagesProcessed.add(modifiedImagePath);
+      notifyListeners();
+    } catch (error) {
+      print('addCapturedImageProcessed Error : $error');
+      // Puedes realizar acciones adicionales aquí, como mostrar mensajes de error.
     }
-    img.Image modifiedImage = drawRectanglesOnImage(originalImage, rectangles);
-    String originalFileName =
-        imagePath.split('/').last; // Obtiene el nombre del archivo
-    DateTime now = DateTime.now();
-    String newFileName =
-        '${now.hour}-${now.minute}-${now.second}-${now.millisecond}_${originalFileName}';
-    String modifiedImagePath =
-        imagePath.replaceFirst(originalFileName, newFileName);
-
-    File(modifiedImagePath).writeAsBytesSync(img.encodePng(modifiedImage));
-
-    _capturedImagesProcessed.add(modifiedImagePath);
-    notifyListeners();
   }
 
   void addCapturedImagesProcessed(List<String> imagePaths) {
@@ -174,10 +181,10 @@ class CapturedImagesModel extends ChangeNotifier {
         textY = y - 50;
       } else if (place == "inferior") {
         textX = x + width ~/ 5; // Texto en medio del ancho de la figura
-        textY = y + height + 10;
+        textY = y + height + 25;
       } else if (place == "izquierda") {
-        textX = x - 150;
-        textY = y + height ~/ 2 - 10;
+        textX = x - 300;
+        textY = y + height ~/ 2 - 75;
       } else if (place == "derecha") {
         textX = x + width + 10;
         textY = y + height ~/ 2 - 10;
@@ -185,7 +192,7 @@ class CapturedImagesModel extends ChangeNotifier {
 
       // Agrega el texto en el lateral izquierdo
 
-      img.drawString(modifiedImage, img.arial_24, textX, textY, text,
+      img.drawString(modifiedImage, img.arial_48, textX, textY, text,
           color: img.getColor(0, 0, 0));
     }
 
