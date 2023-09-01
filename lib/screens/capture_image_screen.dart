@@ -1,4 +1,5 @@
 import 'package:ejemplo/screens/ejemplo_uso_firebase.dart';
+import 'package:ejemplo/screens/resultados_admin.dart';
 import 'package:ejemplo/screens/text_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -73,6 +74,13 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
               title: Text('Pantalla de resultados'),
               onTap: () {
                 _onOptionSelected(context, '/measurement', MeasurementScreen());
+              },
+            ),
+            ListTile(
+              title: Text('Resultados - ADMIN'),
+              onTap: () {
+                _onOptionSelected(
+                    context, '/resultadosAdmin', ResultadosAdmin());
               },
             ),
             ListTile(

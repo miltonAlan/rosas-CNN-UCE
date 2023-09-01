@@ -1,4 +1,5 @@
 import 'package:ejemplo/screens/ejemplo_uso_firebase.dart';
+import 'package:ejemplo/screens/resultados_admin.dart';
 import 'package:ejemplo/screens/text_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -58,6 +59,7 @@ class EjemploApp extends StatelessWidget {
           '/capture': (context) => CaptureImageScreen(),
           '/measurement': (context) => MeasurementScreen(),
           '/ejemplofirebase': (context) => EjemploFirebase(),
+          '/resultadosAdmin': (context) => ResultadosAdmin(),
         },
       ),
     );
