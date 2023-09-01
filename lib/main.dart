@@ -1,3 +1,4 @@
+import 'package:ejemplo/screens/ejemplo_uso_firebase.dart';
 import 'package:ejemplo/screens/text_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -9,8 +10,14 @@ import 'package:ejemplo/screens/auth_screen.dart';
 import 'package:ejemplo/screens/capture_image_screen.dart';
 import 'package:ejemplo/screens/measurement_screen.dart';
 import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   HttpOverrides.global = MyHttpOverrides();
   runApp(EjemploApp());
 }
@@ -50,6 +57,7 @@ class EjemploApp extends StatelessWidget {
           '/auth': (context) => AuthScreen(),
           '/capture': (context) => CaptureImageScreen(),
           '/measurement': (context) => MeasurementScreen(),
+          '/ejemplofirebase': (context) => EjemploFirebase(),
         },
       ),
     );

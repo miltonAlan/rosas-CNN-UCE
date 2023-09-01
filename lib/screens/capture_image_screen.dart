@@ -1,3 +1,4 @@
+import 'package:ejemplo/screens/ejemplo_uso_firebase.dart';
 import 'package:ejemplo/screens/text_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -59,6 +60,13 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
               title: Text('Carga imágenes desde cámara/galería'),
               onTap: () {
                 _onOptionSelected(context, '/capture', CaptureImageScreen());
+              },
+            ),
+            ListTile(
+              title: Text('EJEMPLO USO FIREBASE'),
+              onTap: () {
+                _onOptionSelected(
+                    context, '/ejemplofirebase', EjemploFirebase());
               },
             ),
             ListTile(

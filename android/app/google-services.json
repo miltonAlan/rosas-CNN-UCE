@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "889692207830",
+    "project_id": "mineria-95bea",
+    "storage_bucket": "mineria-95bea.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889692207830:android:75ca7693b134e99033a777",
+        "android_client_info": {
+          "package_name": "com.example.ejemplo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "889692207830-2dno13jgi91hp6jn3vm8cprrflg45u46.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGcuIZZpadxL5qyOH4NK1yOA5uqthr0C0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "889692207830-2dno13jgi91hp6jn3vm8cprrflg45u46.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
