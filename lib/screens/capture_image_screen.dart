@@ -164,21 +164,33 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
             ),
           Align(
             alignment: Alignment.bottomCenter,
-            child: FloatingActionButton.extended(
-              onPressed: hasImages && !_isProcessing ? _processImages : null,
-              label: _isProcessing
-                  ? SizedBox(
-                      width: 160,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Procesando...'),
-                          SizedBox(width: 10),
-                          CircularProgressIndicator(),
-                        ],
-                      ),
-                    )
-                  : Text('Procesar Imágenes'),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                FloatingActionButton.extended(
+                  onPressed:
+                      hasImages && !_isProcessing ? _processImages : null,
+                  label: _isProcessing
+                      ? SizedBox(
+                          width: 160,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('Procesando...'),
+                              SizedBox(width: 10),
+                              CircularProgressIndicator(),
+                            ],
+                          ),
+                        )
+                      : Text('Procesar Imágenes'),
+                  icon: Icon(Icons.settings), // Icono de engranaje
+                ),
+                FloatingActionButton.extended(
+                  onPressed: hasImages && !_isProcessing ? _clearImages : null,
+                  label: Text('Borrar Todas'),
+                  icon: Icon(Icons.close), // Agregar el icono de una X
+                ),
+              ],
             ),
           ),
         ],
@@ -312,6 +324,11 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     } else {
       Navigator.pop(context);
     }
+  }
+
+  void _clearImages() {
+    Provider.of<CapturedImagesModel>(context, listen: false)
+        .clearCapturedImages();
   }
 
   void _showProcessedMessage(BuildContext context) {
