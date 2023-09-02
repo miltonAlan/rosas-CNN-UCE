@@ -9,11 +9,9 @@ import 'package:photo_view/photo_view.dart';
 class MeasurementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final capturedImagesModel = context.watch<CapturedImagesModel>();
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('Pantalla de Medición'),
+        title: Text('Pantalla de Resultados'),
       ),
       drawer: Drawer(
         child: ListView(
@@ -49,40 +47,73 @@ class MeasurementScreen extends StatelessWidget {
         ),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Imágenes almacenadas:',
-              style: TextStyle(fontSize: 24),
+        child: _buildImageGrid(context),
+      ),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          FloatingActionButton.extended(
+            onPressed: () {
+              // Lógica para el primer botón aquí
+            },
+            label: Text('Guardar Resultados'),
+            icon: Icon(Icons.upload_file), // Icono del primer botón
+          ),
+          FloatingActionButton.extended(
+            onPressed: () {
+              _clearImagesProcessed(
+                  context); // Llama al método para borrar todas las imágenes procesadas
+            },
+            label: Text('Borrar Todas'),
+            icon: Icon(Icons.close), // Icono del segundo botón
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageGrid(BuildContext context) {
+    final capturedImagesModel = context.watch<CapturedImagesModel>();
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(height: 16),
+        Expanded(
+          child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
             ),
-            SizedBox(height: 16),
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                ),
-                itemCount: capturedImagesModel.capturedImagesProcessed.length,
-                itemBuilder: (context, index) {
-                  String imagePath =
-                      capturedImagesModel.capturedImagesProcessed[index];
-                  print("mostradas" +
-                      capturedImagesModel.capturedImagesProcessed[index]);
-                  return GestureDetector(
-                    onTap: () {
-                      _showImageDetail(context, imagePath);
-                    },
-                    child: Image.file(
+            itemCount: capturedImagesModel.capturedImagesProcessed.length,
+            itemBuilder: (context, index) {
+              String imagePath =
+                  capturedImagesModel.capturedImagesProcessed[index];
+              print("mostradas" +
+                  capturedImagesModel.capturedImagesProcessed[index]);
+              return GestureDetector(
+                onTap: () {
+                  _showImageDetail(context, imagePath);
+                },
+                child: Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    Image.file(
                       File(imagePath),
                       fit: BoxFit.cover,
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () {
+                        _removeImage(context, index);
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -111,5 +142,15 @@ class MeasurementScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _removeImage(BuildContext context, int index) {
+    Provider.of<CapturedImagesModel>(context, listen: false)
+        .removeCapturedImageProcessed(index);
+  }
+
+  void _clearImagesProcessed(BuildContext context) {
+    Provider.of<CapturedImagesModel>(context, listen: false)
+        .clearCapturedImagesProcessed();
   }
 }
