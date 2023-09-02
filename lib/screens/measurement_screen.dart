@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:ejemplo/screens/drawer_modular.dart';
+import 'package:ejemplo/screens/text_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ejemplo/providers/captured_images_model.dart';
@@ -9,43 +11,14 @@ import 'package:photo_view/photo_view.dart';
 class MeasurementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final String rol =
+        Provider.of<TestResultProvider>(context).rol ?? "Rol no definido";
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Pantalla de Resultados'),
       ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-              child: Text('Bienvenido a la aplicación'),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-            ListTile(
-              title: Text('Carga imágenes desde cámara/galería'),
-              onTap: () {
-                _onOptionSelected(context, '/capture', CaptureImageScreen());
-              },
-            ),
-            ListTile(
-              title: Text('Pantalla de resultados'),
-              onTap: () {
-                _onOptionSelected(context, '/measurement', MeasurementScreen());
-              },
-            ),
-            ListTile(
-              title: Text('Cerrar Sesión'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AuthScreen()),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: AppDrawerAndNavigation.buildDrawer(context, rol),
       body: Center(
         child: _buildImageGrid(context),
       ),

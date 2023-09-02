@@ -1,46 +1,66 @@
 import 'package:ejemplo/screens/capture_image_screen.dart';
 import 'package:ejemplo/screens/measurement_screen.dart';
+import 'package:ejemplo/screens/resultados_admin.dart';
+import 'package:ejemplo/screens/text_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:ejemplo/widgets/custom_button.dart';
 import 'package:ejemplo/widgets/custom_text_field.dart';
+import 'package:ejemplo/providers/firebase_ejemplo.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  void _login(BuildContext context) {
-    String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
+  void _logindb(BuildContext context, String email, String password) async {
+    // Llama a la función de inicio de sesión con Firebase Authentication y Firestore.
+    bool loginSuccess =
+        await signInWithEmailAndPassword(context, email, password);
 
-    if ((email == 'admin' && password == 'admin') ||
-        (email.isEmpty && password.isEmpty)) {
-      // Simulate login delay (You can replace this with actual API call)
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: Text('Ingresando'),
-          content: Center(
-            child: CircularProgressIndicator(),
-          ),
+    if (loginSuccess) {
+      // Obtiene el rol del usuario después del inicio de sesión.
+      final String rol =
+          Provider.of<TestResultProvider>(context, listen: false).rol;
+
+      String successMessage = 'Ingreso exitoso como $rol';
+
+      // Muestra un mensaje de éxito antes de navegar a la pantalla correspondiente.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(successMessage),
+          duration: Duration(seconds: 2),
         ),
       );
-      Future.delayed(Duration(seconds: 2), () {
-        Navigator.pop(context); // Close the dialog
+
+      if (rol == 'administrador') {
+        // Si el usuario es administrador, navega a la pantalla de administrador.
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => CaptureImageScreen()),
+          MaterialPageRoute(
+            builder: (context) => ResultadosAdmin(),
+          ),
         );
-      });
+      } else {
+        // Si el usuario no es administrador, navega a la pantalla de trabajador.
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CaptureImageScreen(),
+          ),
+        );
+      }
     } else {
+      // Si la autenticación falla, puedes mostrar un mensaje de error.
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('Login Incorrecto'),
-          content: Text('Clave o correo incorrectos'),
+          title: Text('Error de inicio de sesión'),
+          content: Text('Usuario o contraseña incorrectos.'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.pop(context);
+              },
               child: Text('OK'),
             ),
           ],
@@ -74,7 +94,11 @@ class LoginScreen extends StatelessWidget {
               ),
               SizedBox(height: 24.0),
               CustomButton(
-                onPressed: () => _login(context),
+                onPressed: () {
+                  String email = _emailController.text.trim();
+                  String password = _passwordController.text.trim();
+                  _logindb(context, email, password);
+                },
                 label: 'Ingresar',
               ),
             ],

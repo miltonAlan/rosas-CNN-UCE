@@ -1,3 +1,4 @@
+import 'package:ejemplo/screens/drawer_modular.dart';
 import 'package:ejemplo/screens/ejemplo_uso_firebase.dart';
 import 'package:ejemplo/screens/resultados_admin.dart';
 import 'package:ejemplo/screens/text_provider.dart';
@@ -29,10 +30,12 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
   Widget build(BuildContext context) {
     final capturedImagesModel = Provider.of<CapturedImagesModel>(context);
     bool hasImages = capturedImagesModel.capturedImages.isNotEmpty;
+    final String rol =
+        Provider.of<TestResultProvider>(context).rol ?? "Rol no definido";
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Pantalla de Captura de Imagen'),
+        title: Text('Carga de Fotografias'),
         actions: [
           Row(
             children: [
@@ -48,53 +51,7 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-              child: Text('Bienvenido a la aplicación'),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-            ListTile(
-              title: Text('Carga imágenes desde cámara/galería'),
-              onTap: () {
-                _onOptionSelected(context, '/capture', CaptureImageScreen());
-              },
-            ),
-            ListTile(
-              title: Text('EJEMPLO USO FIREBASE'),
-              onTap: () {
-                _onOptionSelected(
-                    context, '/ejemplofirebase', EjemploFirebase());
-              },
-            ),
-            ListTile(
-              title: Text('Pantalla de resultados'),
-              onTap: () {
-                _onOptionSelected(context, '/measurement', MeasurementScreen());
-              },
-            ),
-            ListTile(
-              title: Text('Resultados - ADMIN'),
-              onTap: () {
-                _onOptionSelected(
-                    context, '/resultadosAdmin', ResultadosAdmin());
-              },
-            ),
-            ListTile(
-              title: Text('Cerrar Sesión'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AuthScreen()),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: AppDrawerAndNavigation.buildDrawer(context, rol),
       body: Center(
         child: capturedImagesModel.capturedImages.isEmpty
             ? Text('No se ha capturado ninguna imagen')
@@ -288,10 +245,13 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     final testResultProvider =
         Provider.of<TestResultProvider>(context, listen: false);
     String url = testResultProvider.text; // Acceder a _testResult
+    String rol = testResultProvider.rol; // Acceder a role
     final apiUrl = url + apiRuta;
     print('URLXXXXXXXXXXXXx' + url);
     print('apirutaXXXXXXXXXXXXx' + apiRuta);
     print("apiUrlXXXXXXXXx: " + apiUrl);
+    print("rol: " + rol);
+
     try {
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
       request.files

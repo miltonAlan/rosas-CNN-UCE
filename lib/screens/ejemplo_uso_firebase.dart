@@ -98,23 +98,23 @@ class EjemploFirebase extends StatelessWidget {
                           final password = _passwordController.text;
 
                           // Llama al método addUsuario con los valores ingresados
-                          final resultado = await addUsuario(usuario, password);
+                          // final resultado = await addUsuario(usuario, password);
 
-                          if (resultado) {
-                            // Si la operación fue exitosa, muestra un mensaje o realiza alguna acción
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Usuario agregado con éxito'),
-                              ),
-                            );
-                          } else {
-                            // Si la operación falla, muestra un mensaje de error
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error al agregar el usuario'),
-                              ),
-                            );
-                          }
+                          // if (resultado) {
+                          //   // Si la operación fue exitosa, muestra un mensaje o realiza alguna acción
+                          //   ScaffoldMessenger.of(context).showSnackBar(
+                          //     SnackBar(
+                          //       content: Text('Usuario agregado con éxito'),
+                          //     ),
+                          //   );
+                          // } else {
+                          //   // Si la operación falla, muestra un mensaje de error
+                          //   ScaffoldMessenger.of(context).showSnackBar(
+                          //     SnackBar(
+                          //       content: Text('Error al agregar el usuario'),
+                          //     ),
+                          //   );
+                          // }
 
                           // Limpia los campos de texto después de guardar
                           _usuarioController.clear();

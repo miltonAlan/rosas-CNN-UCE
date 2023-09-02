@@ -1,5 +1,8 @@
 import 'package:ejemplo/providers/firebase_ejemplo.dart';
+import 'package:ejemplo/screens/drawer_modular.dart';
+import 'package:ejemplo/screens/text_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Asegúrate de importar provider aquí
 
 class ResultadosAdmin extends StatefulWidget {
   @override
@@ -74,10 +77,14 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
 
   @override
   Widget build(BuildContext context) {
+    final String rol =
+        Provider.of<TestResultProvider>(context).rol ?? "Rol no definido";
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Visualización de resultados \npara el administrador'),
       ),
+      drawer: AppDrawerAndNavigation.buildDrawer(context, rol),
       body: SingleChildScrollView(
         scrollDirection: Axis.vertical, // Cambia a desplazamiento vertical
         child: Column(

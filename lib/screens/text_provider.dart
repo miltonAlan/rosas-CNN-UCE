@@ -19,4 +19,13 @@ class TestResultProvider extends ChangeNotifier {
     _testResult = newText;
     notifyListeners();
   }
+
+  String _rol = ''; // Nuevo campo 'rol'
+
+  String get rol => _rol;
+
+  set rol(String newRol) {
+    _rol = newRol;
+    notifyListeners();
+  }
 }
