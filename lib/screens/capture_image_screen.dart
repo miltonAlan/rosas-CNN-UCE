@@ -1,4 +1,5 @@
 import 'package:ejemplo/screens/ejemplo_uso_firebase.dart';
+import 'package:ejemplo/screens/resultados_admin.dart';
 import 'package:ejemplo/screens/text_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -73,6 +74,13 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
               title: Text('Pantalla de resultados'),
               onTap: () {
                 _onOptionSelected(context, '/measurement', MeasurementScreen());
+              },
+            ),
+            ListTile(
+              title: Text('Resultados - ADMIN'),
+              onTap: () {
+                _onOptionSelected(
+                    context, '/resultadosAdmin', ResultadosAdmin());
               },
             ),
             ListTile(
@@ -156,21 +164,33 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
             ),
           Align(
             alignment: Alignment.bottomCenter,
-            child: FloatingActionButton.extended(
-              onPressed: hasImages && !_isProcessing ? _processImages : null,
-              label: _isProcessing
-                  ? SizedBox(
-                      width: 160,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Procesando...'),
-                          SizedBox(width: 10),
-                          CircularProgressIndicator(),
-                        ],
-                      ),
-                    )
-                  : Text('Procesar Imágenes'),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                FloatingActionButton.extended(
+                  onPressed:
+                      hasImages && !_isProcessing ? _processImages : null,
+                  label: _isProcessing
+                      ? SizedBox(
+                          width: 160,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('Procesando...'),
+                              SizedBox(width: 10),
+                              CircularProgressIndicator(),
+                            ],
+                          ),
+                        )
+                      : Text('Procesar Imágenes'),
+                  icon: Icon(Icons.settings), // Icono de engranaje
+                ),
+                FloatingActionButton.extended(
+                  onPressed: hasImages && !_isProcessing ? _clearImages : null,
+                  label: Text('Borrar Todas'),
+                  icon: Icon(Icons.close), // Agregar el icono de una X
+                ),
+              ],
             ),
           ),
         ],
@@ -304,6 +324,11 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     } else {
       Navigator.pop(context);
     }
+  }
+
+  void _clearImages() {
+    Provider.of<CapturedImagesModel>(context, listen: false)
+        .clearCapturedImages();
   }
 
   void _showProcessedMessage(BuildContext context) {
