@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:ejemplo/providers/firebase_ejemplo.dart';
 import 'package:ejemplo/screens/drawer_modular.dart';
 import 'package:ejemplo/screens/text_provider.dart';
 import 'package:flutter/material.dart';
@@ -8,26 +9,64 @@ import 'package:ejemplo/screens/auth_screen.dart';
 import 'package:ejemplo/screens/capture_image_screen.dart';
 import 'package:photo_view/photo_view.dart';
 
-class MeasurementScreen extends StatelessWidget {
+class MeasurementScreen extends StatefulWidget {
+  @override
+  _MeasurementScreenState createState() => _MeasurementScreenState();
+}
+
+class _MeasurementScreenState extends State<MeasurementScreen> {
+  bool _isUploading = false;
+
+  Future<void> _guardarResultados(BuildContext context) async {
+    final capturedImagesModel =
+        Provider.of<CapturedImagesModel>(context, listen: false);
+
+    setState(() {
+      _isUploading = true; // Activar indicador de carga
+    });
+
+    await capturedImagesModel.subirTodasLasImagenesConTexto();
+
+    setState(() {
+      _isUploading = false; // Desactivar indicador de carga
+    });
+
+    // Mostrar un SnackBar con el mensaje de éxito
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Resultados guardados con éxito'),
+        duration: Duration(seconds: 4), // Duración del mensaje
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final String rol =
-        Provider.of<TestResultProvider>(context).rol ?? "Rol no definido";
+        Provider.of<TestResultProvider>(context, listen: false).rol ??
+            "Rol no definido";
+    final String nombreTrabajador =
+        Provider.of<TestResultProvider>(context).nombreTrabajador ??
+            "Nombre no definido";
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Pantalla de Resultados'),
       ),
-      drawer: AppDrawerAndNavigation.buildDrawer(context, rol),
+      drawer:
+          AppDrawerAndNavigation.buildDrawer(context, rol, nombreTrabajador),
       body: Center(
-        child: _buildImageGrid(context),
+        child: _isUploading
+            ? CircularProgressIndicator() // Mostrar indicador de carga si se está subiendo
+            : _buildImageGrid(context),
       ),
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           FloatingActionButton.extended(
             onPressed: () {
-              // Lógica para el primer botón aquí
+              _guardarResultados(
+                  context); // Llama al método para guardar resultados
             },
             label: Text('Guardar Resultados'),
             icon: Icon(Icons.upload_file), // Icono del primer botón
@@ -61,8 +100,8 @@ class MeasurementScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               String imagePath =
                   capturedImagesModel.capturedImagesProcessed[index];
-              print("mostradas" +
-                  capturedImagesModel.capturedImagesProcessed[index]);
+              // print("mostradas" +
+              //     capturedImagesModel.capturedImagesProcessed[index]);
               return GestureDetector(
                 onTap: () {
                   _showImageDetail(context, imagePath);

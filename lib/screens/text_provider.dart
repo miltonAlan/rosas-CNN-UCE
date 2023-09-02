@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class TestResultProvider extends ChangeNotifier {
-  String _text = '';
+  String _text = 'http://192.168.100.8:5000';
 
   String get text => _text;
 
@@ -26,6 +26,15 @@ class TestResultProvider extends ChangeNotifier {
 
   set rol(String newRol) {
     _rol = newRol;
+    notifyListeners();
+  }
+
+  String _nombreTrabajador = ''; // Nuevo campo 'nombreTrabajador'
+
+  String get nombreTrabajador => _nombreTrabajador;
+
+  set nombreTrabajador(String newNombreTrabajador) {
+    _nombreTrabajador = newNombreTrabajador;
     notifyListeners();
   }
 }

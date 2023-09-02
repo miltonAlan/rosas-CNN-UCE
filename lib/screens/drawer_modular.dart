@@ -20,14 +20,15 @@ class AppDrawerAndNavigation {
     }
   }
 
-  static Widget buildDrawer(BuildContext context, String rol) {
+  static Widget buildDrawer(
+      BuildContext context, String rol, String nombreTrabajador) {
     bool isAdmin = (rol == 'administrador');
 
     return Drawer(
       child: ListView(
         children: [
           DrawerHeader(
-            child: Text('Bienvenido a la aplicación \n Rol: $rol'),
+            child: Text('Bienvenid@ $nombreTrabajador \n Rol: $rol'),
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColor,
             ),

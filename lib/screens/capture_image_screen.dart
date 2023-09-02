@@ -32,6 +32,9 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     bool hasImages = capturedImagesModel.capturedImages.isNotEmpty;
     final String rol =
         Provider.of<TestResultProvider>(context).rol ?? "Rol no definido";
+    final String nombreTrabajador =
+        Provider.of<TestResultProvider>(context).nombreTrabajador ??
+            "Nombre no definido";
 
     return Scaffold(
       appBar: AppBar(
@@ -51,7 +54,8 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
           ),
         ],
       ),
-      drawer: AppDrawerAndNavigation.buildDrawer(context, rol),
+      drawer:
+          AppDrawerAndNavigation.buildDrawer(context, rol, nombreTrabajador),
       body: Center(
         child: capturedImagesModel.capturedImages.isEmpty
             ? Text('No se ha capturado ninguna imagen')
@@ -247,10 +251,10 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     String url = testResultProvider.text; // Acceder a _testResult
     String rol = testResultProvider.rol; // Acceder a role
     final apiUrl = url + apiRuta;
-    print('URLXXXXXXXXXXXXx' + url);
-    print('apirutaXXXXXXXXXXXXx' + apiRuta);
-    print("apiUrlXXXXXXXXx: " + apiUrl);
-    print("rol: " + rol);
+    // print('URLXXXXXXXXXXXXx' + url);
+    // print('apirutaXXXXXXXXXXXXx' + apiRuta);
+    // print("apiUrlXXXXXXXXx: " + apiUrl);
+    // print("rol: " + rol);
 
     try {
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));

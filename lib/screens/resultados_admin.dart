@@ -79,12 +79,16 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
   Widget build(BuildContext context) {
     final String rol =
         Provider.of<TestResultProvider>(context).rol ?? "Rol no definido";
+    final String nombreTrabajador =
+        Provider.of<TestResultProvider>(context).nombreTrabajador ??
+            "Nombre no definido";
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Visualización de resultados \npara el administrador'),
       ),
-      drawer: AppDrawerAndNavigation.buildDrawer(context, rol),
+      drawer:
+          AppDrawerAndNavigation.buildDrawer(context, rol, nombreTrabajador),
       body: SingleChildScrollView(
         scrollDirection: Axis.vertical, // Cambia a desplazamiento vertical
         child: Column(
