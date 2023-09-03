@@ -25,7 +25,7 @@ class _MeasurementScreenState extends State<MeasurementScreen> {
       _isUploading = true; // Activar indicador de carga
     });
 
-    await capturedImagesModel.subirTodasLasImagenesConTexto();
+    await capturedImagesModel.subirTodasLasImagenesConTexto(context);
 
     setState(() {
       _isUploading = false; // Desactivar indicador de carga

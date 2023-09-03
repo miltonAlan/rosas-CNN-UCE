@@ -230,14 +230,16 @@ class CapturedImagesModel extends ChangeNotifier {
     return modifiedImage;
   }
 
-  Future<void> subirTodasLasImagenesConTexto() async {
+  Future<void> subirTodasLasImagenesConTexto(BuildContext context) async {
     DateTime now = DateTime.now();
     String formattedDate = '${now.year}_${now.month}_${now.day}_${now.hour}';
-    String nombreTrabajador = "ss";
-    //     Provider.of<TestResultProvider>(context).nombreTrabajador ??
-    //         "Nombre no definido";
+    String fecha = formattedDate;
 
-    // print(' XXXXXXXXXX $nombreTrabajador');
+    final testResultProvider =
+        Provider.of<TestResultProvider>(context, listen: false);
+    String nombreTrabajador =
+        testResultProvider.nombreTrabajador ?? "Nombre no definido";
+
     for (String imagePath in _capturedImagesProcessed) {
       // Genera datos aleatorios para los datos de rosas
       List<Map<String, dynamic>> rosasData = [
@@ -249,8 +251,6 @@ class CapturedImagesModel extends ChangeNotifier {
         },
         // Puedes agregar más objetos Map para más datos de rosas si es necesario
       ];
-
-      String fecha = formattedDate;
 
       // Llama a subirImagenConTexto con todos los argumentos necesarios
       bool subidaExitosa = await subirImagenConTexto(
