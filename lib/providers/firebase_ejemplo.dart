@@ -128,10 +128,7 @@ Future<bool> subirImagenConTexto(
     List<Map<String, dynamic>> rosasList = [];
     for (var rosaData in rosasData) {
       Map<String, dynamic> rosa = {
-        'clase': rosaData['clase'],
-        'capullo': rosaData['capullo'],
-        'tallo': rosaData['tallo'],
-        'total': rosaData['total'],
+        'altura': rosaData['altura'],
       };
       rosasList.add(rosa);
     }
