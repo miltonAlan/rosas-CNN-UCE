@@ -54,14 +54,14 @@ class AppDrawerAndNavigation {
                 onOptionSelected(context, '/measurement', MeasurementScreen());
               },
             ),
-          if (isAdmin)
-            ListTile(
-              title: Text('Resultados Generales'),
-              onTap: () {
-                onOptionSelected(
-                    context, '/resultadosAdmin', ResultadosAdmin());
-              },
-            ),
+          // if (isAdmin)
+          //   ListTile(
+          //     title: Text('Resultados Generales'),
+          //     onTap: () {
+          //       onOptionSelected(
+          //           context, '/resultadosAdmin', ResultadosAdmin());
+          //     },
+          //   ),
           if (!isAdmin)
             ListTile(
               title: Text('Todas mis mediciones'),

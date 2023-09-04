@@ -18,6 +18,31 @@ Future<List> getUsuarios() async {
   return usuarios;
 }
 
+Future<List<String>> obtenerNombresTrabajadores() async {
+  try {
+    final QuerySnapshot trabajadoresSnapshot = await FirebaseFirestore.instance
+        .collection("usuarios")
+        .where("role", isEqualTo: "trabajador")
+        .get();
+
+    List<String> nombresTrabajadores = [];
+    nombresTrabajadores.add(
+        'Todos los trabajadores'); // Agregar el elemento "Todos los trabajadores"
+
+    for (QueryDocumentSnapshot doc in trabajadoresSnapshot.docs) {
+      final String? nombre = doc["name"] as String?;
+      if (nombre != null) {
+        nombresTrabajadores.add(nombre);
+      }
+    }
+
+    return nombresTrabajadores;
+  } catch (e) {
+    print('Error al obtener nombres de trabajadores: $e');
+    return [];
+  }
+}
+
 Future<bool> addUsuario(String name, String lastName, String email,
     String password, String role) async {
   try {
@@ -90,6 +115,39 @@ Future<List<Map<String, dynamic>>> obtenerMedicionesTrabajador(
         .collection('imagenes')
         .where('nombreTrabajador', isEqualTo: trabajador)
         .get();
+
+    for (QueryDocumentSnapshot doc in trabajadorData.docs) {
+      mediciones.add(doc.data() as Map<String, dynamic>);
+    }
+
+    // // Imprimir las mediciones
+    // for (Map<String, dynamic> medicion in mediciones) {
+    //   print('Fecha: ${medicion['fecha']}');
+    //   print('ImageUrl: ${medicion['imageUrl']}');
+    //   print('Nombre Trabajador: ${medicion['nombreTrabajador']}');
+    //   print('Rosas:');
+    //   if (medicion['rosas'] != null) {
+    //     for (int i = 0; i < medicion['rosas'].length; i++) {
+    //       print('  $i:');
+    //       print('    Altura: ${medicion['rosas'][i]['altura']}');
+    //     }
+    //   } else {
+    //     print('    Sin datos de rosas');
+    //   }
+    //   print('\n');
+    // }
+
+    return mediciones;
+  } catch (e) {
+    print('Error al obtener mediciones del trabajador: $e');
+    return [];
+  }
+}
+
+Future<List<Map<String, dynamic>>> obtenerMedicionesTrabajadores() async {
+  List<Map<String, dynamic>> mediciones = [];
+  try {
+    final QuerySnapshot trabajadorData = await db.collection('imagenes').get();
 
     for (QueryDocumentSnapshot doc in trabajadorData.docs) {
       mediciones.add(doc.data() as Map<String, dynamic>);
