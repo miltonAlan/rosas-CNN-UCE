@@ -164,9 +164,22 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     final pickedFile = await imagePicker.getImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
+      final File compressedImage = await compressImage(File(pickedFile.path));
       Provider.of<CapturedImagesModel>(context, listen: false)
-          .addCapturedImage(pickedFile.path);
+          .addCapturedImage(compressedImage.path);
     }
+  }
+
+  Future<File> compressImage(File file) async {
+    // Lee la imagen original
+    final imageBytes = await file.readAsBytes();
+
+    // Comprime la imagen reduciendo su calidad
+    final compressedFile =
+        File('${file.parent.path}/compressed_${file.uri.pathSegments.last}');
+    await compressedFile.writeAsBytes(imageBytes, flush: true);
+
+    return compressedFile;
   }
 
   Future<void> _pickMultipleImagesFromGallery() async {

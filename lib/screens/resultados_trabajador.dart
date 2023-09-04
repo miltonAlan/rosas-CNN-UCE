@@ -202,12 +202,14 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
                   final fecha = formatoFecha.parse(
                       fechastr); // Intentar convertir la cadena en DateTime
 
-                  formattedFecha =
-                      DateFormat('dd/MMMM/yyyy HH:mm').format(fecha);
+                  formattedFecha = DateFormat('dd/MMMM/yyyy').format(fecha);
                 } catch (e) {
                   // Manejar el error si la cadena no es una fecha válida
                   formattedFecha = 'Fecha inválida';
                 }
+// Antes de construir la DataTable, ordena la lista de mediciones
+                medicionesTrabajador
+                    .sort((a, b) => b['fecha'].compareTo(a['fecha']));
 
                 return DataRow(
                   selected: selectedRow == index,

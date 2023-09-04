@@ -228,7 +228,8 @@ class CapturedImagesModel extends ChangeNotifier {
 
   Future<void> subirTodasLasImagenesConTexto(BuildContext context) async {
     DateTime now = DateTime.now();
-    String formattedDate = '${now.year}_${now.month}_${now.day}_${now.hour}';
+    String formattedDate =
+        '${now.year}_${now.month}_${now.day}_${now.hour}_${now.minute}';
     String fecha = formattedDate;
 
     final testResultProvider =
