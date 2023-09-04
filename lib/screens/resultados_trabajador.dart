@@ -32,7 +32,7 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Detalle de la Rosa'),
+          title: Text('Detalle de la Imagen'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,11 +43,6 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
                 width: 300,
                 height: 300,
               ),
-              SizedBox(height: 10),
-              Text('Texto 1: Datos de la columna 1'),
-              Text('Texto 2: Datos de la columna 2'),
-              Text('Texto 3: Datos de la columna 3'),
-              Text('Texto 4: Datos de la columna 4'),
             ],
           ),
           actions: [
@@ -190,7 +185,7 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
               columns: [
                 DataColumn(label: Text('Imagen')),
                 DataColumn(label: Text('Fecha')),
-                DataColumn(label: Text('Conteo')),
+                DataColumn(label: Text('Unidades')),
               ],
               rows: medicionesTrabajador.asMap().entries.map((entry) {
                 final index = entry.key;
