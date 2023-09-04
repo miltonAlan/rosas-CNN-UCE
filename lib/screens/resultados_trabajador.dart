@@ -113,12 +113,47 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
 
   @override
   Widget build(BuildContext context) {
+    List<String> textosSuperiores = [];
     final String rol =
         Provider.of<TestResultProvider>(context).rol ?? "Rol no definido";
     final String nombreTrabajador =
         Provider.of<TestResultProvider>(context).nombreTrabajador ??
             "Nombre no definido";
+    // Calcular la suma de los valores de la columna "Conteo"
+    num totalRosasProcesadas = 0;
+    for (var medicion in medicionesTrabajador) {
+      final rosasCount = (medicion['rosas'] ?? []).length;
+      totalRosasProcesadas += rosasCount.toInt(); // Convertir a int
+    }
+    setState(() {
+      textosSuperiores.add(
+          "Total de rosas procesadas: $totalRosasProcesadas"); // Agrega un nuevo texto
+    });
 
+    Map<String, int> contadoresRangos = {};
+
+    for (Map<String, dynamic> medicion in medicionesTrabajador) {
+      if (medicion['rosas'] != null) {
+        for (int i = 0; i < medicion['rosas'].length; i++) {
+          final altura = medicion['rosas'][i]['altura'];
+
+          // Calcular el rango al que pertenece la altura
+          int rango = ((altura) / 10).floor() * 10;
+          // int rango = ((altura) / 10).ceil() * 10;
+
+          // Incrementar el contador correspondiente al rango
+          contadoresRangos.update('$rango', (value) => value + 1,
+              ifAbsent: () => 1);
+        }
+      }
+    }
+    List<Widget> textosRangos = [];
+    contadoresRangos.forEach((rango, cantidad) {
+      setState(() {
+        textosSuperiores
+            .add("Cantidad entre $rango y ${int.parse(rango) + 10}: $cantidad");
+      });
+    });
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -135,16 +170,15 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
                   vertical:
                       1.0), // Espaciado entre el DropdownButton y el nuevo widget
               child: Column(
-                children: [
-                  Text(
-                      'cantidad rosas clase 50 cm............................................'),
-                  Text(
-                      'cantidad rosas clase 60 cm............................................'),
-                  Text(
-                      'cantidad rosas clase 70 cm............................................'),
-                  Text(
-                      'cantidad rosas clase 80 cm............................................'),
-                ],
+                children: textosSuperiores.map((texto) {
+                  return Text(
+                    texto,
+                    style: TextStyle(
+                      fontSize: 18.0, // Tamaño de fuente deseado
+                      // Puedes ajustar otros atributos de estilo aquí si es necesario
+                    ),
+                  );
+                }).toList(),
               ),
             ),
             // DropdownButton
