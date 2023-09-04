@@ -82,24 +82,53 @@ Future<bool> signInWithEmailAndPassword(
   }
 }
 
+Future<List<Map<String, dynamic>>> obtenerMedicionesTrabajador(
+    String trabajador) async {
+  List<Map<String, dynamic>> mediciones = [];
+  try {
+    final QuerySnapshot trabajadorData = await db
+        .collection('imagenes')
+        .where('nombreTrabajador', isEqualTo: trabajador)
+        .get();
+
+    for (QueryDocumentSnapshot doc in trabajadorData.docs) {
+      mediciones.add(doc.data() as Map<String, dynamic>);
+    }
+
+    // // Imprimir las mediciones
+    // for (Map<String, dynamic> medicion in mediciones) {
+    //   print('Fecha: ${medicion['fecha']}');
+    //   print('ImageUrl: ${medicion['imageUrl']}');
+    //   print('Nombre Trabajador: ${medicion['nombreTrabajador']}');
+    //   print('Rosas:');
+    //   if (medicion['rosas'] != null) {
+    //     for (int i = 0; i < medicion['rosas'].length; i++) {
+    //       print('  $i:');
+    //       print('    Altura: ${medicion['rosas'][i]['altura']}');
+    //     }
+    //   } else {
+    //     print('    Sin datos de rosas');
+    //   }
+    //   print('\n');
+    // }
+
+    return mediciones;
+  } catch (e) {
+    print('Error al obtener mediciones del trabajador: $e');
+    return [];
+  }
+}
+
 Future<List<String>> obtenerImagenes() async {
-  // Aquí debes implementar la lógica para obtener las URLs de las imágenes desde Firebase Storage.
-  // Puedes usar Firebase Storage para esto.
-  // Por ahora, retornaremos una lista de URLs de ejemplo.
   return [
     'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
-    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
-    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
-    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
-    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
-    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
-    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
-    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
-    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
-    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
-    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
-    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
-    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
+    'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c'
+  ];
+}
+
+Future<List<String>> obtenerImagenes2(String nombreTrabajador) async {
+  print("nombreTrabajadorXXXXXXXXXXXXXXXXXXXXX: $nombreTrabajador");
+  return [
     'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c',
     'https://firebasestorage.googleapis.com/v0/b/mineria-95bea.appspot.com/o/23110.jpg?alt=media&token=0b329c13-df07-4db0-80a1-f5c6ec027a5c'
   ];

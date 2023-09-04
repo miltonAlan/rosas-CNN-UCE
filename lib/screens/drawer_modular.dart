@@ -3,6 +3,7 @@ import 'package:ejemplo/screens/capture_image_screen.dart';
 import 'package:ejemplo/screens/ejemplo_uso_firebase.dart';
 import 'package:ejemplo/screens/measurement_screen.dart';
 import 'package:ejemplo/screens/resultados_admin.dart';
+import 'package:ejemplo/screens/resultados_trabajador.dart';
 import 'package:flutter/material.dart';
 
 class AppDrawerAndNavigation {
@@ -64,6 +65,14 @@ class AppDrawerAndNavigation {
           if (!isAdmin)
             ListTile(
               title: Text('Todas mis mediciones'),
+              onTap: () {
+                onOptionSelected(
+                    context, '/resultadosTrabajador', ResultadosTrabajador());
+              },
+            ),
+          if (isAdmin)
+            ListTile(
+              title: Text('Todas las mediciones'),
               onTap: () {
                 onOptionSelected(
                     context, '/resultadosAdmin', ResultadosAdmin());
