@@ -12,7 +12,7 @@ class ResultadosTrabajador extends StatefulWidget {
 
 class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
   List<String> imagenesTrabajador = [];
-  int selectedRow = -1; // Variable para rastrear la fila seleccionada.
+  int selectedRow = 0; // Variable para rastrear la fila seleccionada.
   List<String> dropdownOptions = [
     'trabajador 1',
     'trabajador 2',
@@ -233,6 +233,112 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
                   ],
                 );
               }).toList(),
+            ),
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceEvenly, // Alineación de los botones
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    if (selectedRow != -1) {
+                      // Accede a los datos de la fila seleccionada
+                      final selectedMedicion =
+                          medicionesTrabajador[selectedRow];
+                      final imageUrl = selectedMedicion['imageUrl'];
+
+                      // Muestra un cuadro de diálogo de confirmación
+                      bool confirmarBorrado = await showDialog(
+                        context:
+                            context, // Asegúrate de tener acceso al contexto actual
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Confirmar borrado'),
+                            content: Text(
+                                '¿Está seguro de que desea borrar esta imagen?'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text('Cancelar'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(
+                                      false); // Cierra el cuadro de diálogo y retorna false
+                                },
+                              ),
+                              TextButton(
+                                child: Text('Borrar'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(
+                                      true); // Cierra el cuadro de diálogo y retorna true
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirmarBorrado == true) {
+                        bool imagenBorrada = await borrarImagen(imageUrl);
+                        if (imagenBorrada) {
+                          _cargarMedicionesTrabajador(
+                              selectedMedicion['nombreTrabajador']);
+                        }
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                        vertical: 1, horizontal: 1), // Ajusta el padding
+                  ),
+                  child: Text('Borrar Imagen Seleccionada'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (true) {
+                      // Accede a los datos de la fila seleccionada
+                      // Muestra un cuadro de diálogo de confirmación
+                      bool confirmarBorrado = await showDialog(
+                        context:
+                            context, // Asegúrate de tener acceso al contexto actual
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Confirmar borrado'),
+                            content: Text(
+                                '¿Está seguro de que desea borrar todas sus imagenes? \n Este proceso no se puede deshacer.'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text('Cancelar'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(
+                                      false); // Cierra el cuadro de diálogo y retorna false
+                                },
+                              ),
+                              TextButton(
+                                child: Text('Borrar'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(
+                                      true); // Cierra el cuadro de diálogo y retorna true
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirmarBorrado == true) {
+                        bool imagenBorrada =
+                            await borrarImagenesTrabajador(nombreTrabajador);
+                        if (imagenBorrada) {
+                          _cargarMedicionesTrabajador(nombreTrabajador);
+                        }
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                        vertical: 1, horizontal: 1), // Ajusta el padding
+                  ),
+                  child: Text('Borrar todas mis mediciones'),
+                ),
+              ],
             ),
           ],
         ),

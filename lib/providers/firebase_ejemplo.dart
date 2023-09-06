@@ -192,6 +192,53 @@ Future<List<String>> obtenerImagenes2(String nombreTrabajador) async {
   ];
 }
 
+Future<bool> borrarImagen(String imageUrl) async {
+  try {
+    final QuerySnapshot imagenSnapshot = await FirebaseFirestore.instance
+        .collection("imagenes")
+        .where("imageUrl", isEqualTo: imageUrl)
+        .limit(1)
+        .get();
+
+    if (imagenSnapshot.docs.isNotEmpty) {
+      final String documentId = imagenSnapshot.docs[0].id;
+      await FirebaseFirestore.instance
+          .collection("imagenes")
+          .doc(documentId)
+          .delete();
+      return true; // Eliminación exitosa
+    } else {
+      return false; // No se encontró una imagen con la URL proporcionada
+    }
+  } catch (e) {
+    print('Error al eliminar la imagen: $e');
+    return false; // Error en la eliminación
+  }
+}
+
+Future<bool> borrarImagenesTrabajador(String nombreTrabajador) async {
+  try {
+    final QuerySnapshot imagenSnapshot = await FirebaseFirestore.instance
+        .collection("imagenes")
+        .where("nombreTrabajador", isEqualTo: nombreTrabajador)
+        .get();
+
+    if (imagenSnapshot.docs.isNotEmpty) {
+      final String documentId = imagenSnapshot.docs[0].id;
+      await FirebaseFirestore.instance
+          .collection("imagenes")
+          .doc(documentId)
+          .delete();
+      return true; // Eliminación exitosa
+    } else {
+      return false; // No se encontró una imagen con la URL proporcionada
+    }
+  } catch (e) {
+    print('Error al eliminar la imagen: $e');
+    return false; // Error en la eliminación
+  }
+}
+
 Future<bool> subirImagenConTexto(
   List<Map<String, dynamic>> rosasData, // Cambiar a una lista de mapas
   String imagePath,
