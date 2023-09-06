@@ -7,12 +7,18 @@ import 'package:ejemplo/widgets/custom_button.dart';
 import 'package:ejemplo/widgets/custom_text_field.dart';
 import 'package:ejemplo/providers/firebase_ejemplo.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
+  @override
+  _RegisterScreenState createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  String _selectedRole = 'trabajador';
+  String _selectedRole = 'Trabajador';
+  final TextEditingController _tokenController = TextEditingController();
 
   Future<void> _register(BuildContext context) async {
     String name = _nameController.text;
@@ -20,58 +26,79 @@ class RegisterScreen extends StatelessWidget {
     String email = _emailController.text;
     String password = _passwordController.text;
     String role = _selectedRole;
-
-    bool registroExitoso =
-        await registroDb(name, lastName, email, password, role);
+    String enteredToken = _tokenController.text; // Get the entered token
 
     bool showDialogLoading = true;
+    bool showTokenError = false; // Add this variable to track token error
 
-    if (registroExitoso) {
-      // Mostrar diálogo solo si el registro es exitoso
-      showDialogLoading = true;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: Text('Registro Exitoso'),
-          content: Text('¡El registro se ha completado con éxito!'),
-          actions: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Cerrar el mensaje de éxito
-                // Navegar a la pantalla de inicio de sesión
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        LoginScreen(), // Reemplaza con tu página de inicio de sesión
-                  ),
-                );
-              },
-              child: Text('Ir al inicio de sesión'),
-            ),
-          ],
-        ),
-      );
+    if (role == 'Administrador' && enteredToken != '0242931524') {
+      // Check if the role is 'Administrador' and the token is incorrect
+      showTokenError = true;
+    } else {
+      bool registroExitoso =
+          await registroDb(name, lastName, email, password, role);
+
+      if (registroExitoso) {
+        showDialogLoading = true;
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: Text('Registro Exitoso'),
+            content: Text('¡El registro se ha completado con éxito!'),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close the success message
+                  // Navigate to the login screen
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginScreen(),
+                    ),
+                  );
+                },
+                child: Text('Ir al inicio de sesión'),
+              ),
+            ],
+          ),
+        );
+      }
     }
 
-    if (showDialogLoading) {
+    if (showDialogLoading && role != 'Administrador') {
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: Text('Registrando Usuario'),
+          title: Text('Procesando...'),
           content: Center(
             child: CircularProgressIndicator(),
           ),
         ),
       );
     }
+    if (showTokenError) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Token Incorrecto'),
+          content: Text('El token ingresado no es válido.'),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the token error message
+              },
+              child: Text('Aceptar'),
+            ),
+          ],
+        ),
+      );
+    }
 
-    // Esperar un tiempo, dependiendo de si se muestra el diálogo o no
     await Future.delayed(Duration(seconds: showDialogLoading ? 2 : 0));
 
-    Navigator.pop(context); // Cerrar el diálogo
+    Navigator.pop(context); // Close the dialog
   }
 
   Future<bool> registroDb(String name, String lastName, String email,
@@ -114,17 +141,25 @@ class RegisterScreen extends StatelessWidget {
               SizedBox(height: 16.0),
               DropdownButtonFormField<String>(
                 value: _selectedRole,
-                items: ['administrador', 'trabajador'].map((role) {
+                items: ['Administrador', 'Trabajador'].map((role) {
                   return DropdownMenuItem<String>(
                     value: role,
                     child: Text(role),
                   );
                 }).toList(),
                 onChanged: (newValue) {
-                  _selectedRole = newValue!;
+                  setState(() {
+                    _selectedRole = newValue!;
+                  });
                 },
                 decoration: InputDecoration(labelText: 'Role'),
               ),
+              if (_selectedRole == 'Administrador')
+                CustomTextField(
+                  controller: _tokenController,
+                  labelText: 'Ingrese el token para ser Administrador',
+                  // Aquí debes configurar el controlador y cualquier otra propiedad necesaria.
+                ),
               SizedBox(height: 24.0),
               CustomButton(
                 onPressed: () => _register(context),
