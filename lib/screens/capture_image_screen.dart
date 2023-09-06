@@ -15,6 +15,7 @@ import 'dart:convert'; // Asegúrate de agregar esta línea
 import 'package:ejemplo/providers/captured_images_model.dart';
 import 'package:ejemplo/screens/auth_screen.dart';
 import 'package:ejemplo/screens/measurement_screen.dart';
+import 'package:image/image.dart' as img;
 
 class CaptureImageScreen extends StatefulWidget {
   @override
@@ -174,10 +175,25 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     // Lee la imagen original
     final imageBytes = await file.readAsBytes();
 
+    // Decodifica la imagen
+    img.Image? image = img.decodeImage(imageBytes);
+
+    if (image == null) {
+      // Manejar la situación en la que no se puede decodificar la imagen
+      throw Exception('No se pudo decodificar la imagen.');
+    }
+
+    // Redimensiona la imagen si es necesario
+    final maxWidth = 800; // Cambia este valor según tus necesidades
+    if (image.width > maxWidth) {
+      image = img.copyResize(image, width: maxWidth);
+    }
+
     // Comprime la imagen reduciendo su calidad
     final compressedFile =
         File('${file.parent.path}/compressed_${file.uri.pathSegments.last}');
-    await compressedFile.writeAsBytes(imageBytes, flush: true);
+    await compressedFile.writeAsBytes(img.encodeJpg(image,
+        quality: 70)); // Ajusta la calidad según tus necesidades
 
     return compressedFile;
   }

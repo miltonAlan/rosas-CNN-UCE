@@ -1,4 +1,5 @@
 import 'package:ejemplo/screens/ejemplo_uso_firebase.dart';
+import 'package:ejemplo/screens/login_screen.dart';
 import 'package:ejemplo/screens/resultados_admin.dart';
 import 'package:ejemplo/screens/resultados_trabajador.dart';
 import 'package:ejemplo/screens/text_provider.dart';
@@ -62,6 +63,7 @@ class EjemploApp extends StatelessWidget {
           '/ejemplofirebase': (context) => EjemploFirebase(),
           '/resultadosAdmin': (context) => ResultadosAdmin(),
           '/resultadosTrabajador': (context) => ResultadosTrabajador(),
+          '/login': (context) => LoginScreen(),
         },
       ),
     );

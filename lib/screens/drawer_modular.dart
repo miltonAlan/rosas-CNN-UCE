@@ -1,3 +1,4 @@
+import 'package:ejemplo/main.dart';
 import 'package:ejemplo/screens/auth_screen.dart';
 import 'package:ejemplo/screens/capture_image_screen.dart';
 import 'package:ejemplo/screens/ejemplo_uso_firebase.dart';
@@ -5,6 +6,7 @@ import 'package:ejemplo/screens/measurement_screen.dart';
 import 'package:ejemplo/screens/resultados_admin.dart';
 import 'package:ejemplo/screens/resultados_trabajador.dart';
 import 'package:flutter/material.dart';
+import 'package:restart_app/restart_app.dart';
 
 class AppDrawerAndNavigation {
   static void onOptionSelected(
@@ -24,6 +26,7 @@ class AppDrawerAndNavigation {
   static Widget buildDrawer(
       BuildContext context, String rol, String nombreTrabajador) {
     bool isAdmin = (rol == 'administrador');
+    final appDrawer = AppDrawerAndNavigation();
 
     return Drawer(
       child: ListView(
@@ -81,11 +84,15 @@ class AppDrawerAndNavigation {
           ListTile(
             title: Text('Cerrar Sesión'),
             onTap: () {
-              onOptionSelected(context, '/logout', AuthScreen());
+              Restart.restartApp();
             },
           ),
         ],
       ),
     );
+  }
+
+  void restartApp(BuildContext context) {
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 }
