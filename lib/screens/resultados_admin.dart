@@ -276,7 +276,8 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
                 return DataRow(
                   selected: selectedRow == index,
                   onSelectChanged: (selected) {
-                    if (selected != null && selected) {
+                    // if (selected != null && selected) {
+                    if (true) {
                       _showImageDetails(index);
                     }
                   },

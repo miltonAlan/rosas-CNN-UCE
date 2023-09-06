@@ -12,7 +12,7 @@ class ResultadosTrabajador extends StatefulWidget {
 
 class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
   List<String> imagenesTrabajador = [];
-  int selectedRow = 0; // Variable para rastrear la fila seleccionada.
+  int selectedRow = -1; // Variable para rastrear la fila seleccionada.
   List<String> dropdownOptions = [
     'trabajador 1',
     'trabajador 2',
@@ -214,7 +214,8 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
                 return DataRow(
                   selected: selectedRow == index,
                   onSelectChanged: (selected) {
-                    if (selected != null && selected) {
+                    // if (selected != null && selected) {
+                    if (true) {
                       _showImageDetails(index);
                     }
                   },
