@@ -25,7 +25,7 @@ class AppDrawerAndNavigation {
 
   static Widget buildDrawer(
       BuildContext context, String rol, String nombreTrabajador) {
-    bool isAdmin = (rol == 'administrador');
+    bool isAdmin = (rol == 'Administrador');
     final appDrawer = AppDrawerAndNavigation();
 
     return Drawer(

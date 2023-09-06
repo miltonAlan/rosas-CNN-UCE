@@ -32,7 +32,7 @@ class LoginScreen extends StatelessWidget {
         ),
       );
 
-      if (rol == 'administrador') {
+      if (rol == 'Administrador') {
         // Si el usuario es administrador, navega a la pantalla de administrador.
         Navigator.pushReplacement(
           context,

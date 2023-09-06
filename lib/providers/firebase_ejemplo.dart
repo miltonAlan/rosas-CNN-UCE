@@ -22,7 +22,7 @@ Future<List<String>> obtenerNombresTrabajadores() async {
   try {
     final QuerySnapshot trabajadoresSnapshot = await FirebaseFirestore.instance
         .collection("usuarios")
-        .where("role", isEqualTo: "trabajador")
+        .where("role", isEqualTo: "Trabajador")
         .get();
 
     List<String> nombresTrabajadores = [];
@@ -224,17 +224,40 @@ Future<bool> borrarImagenesTrabajador(String nombreTrabajador) async {
         .get();
 
     if (imagenSnapshot.docs.isNotEmpty) {
-      final String documentId = imagenSnapshot.docs[0].id;
-      await FirebaseFirestore.instance
-          .collection("imagenes")
-          .doc(documentId)
-          .delete();
+      for (QueryDocumentSnapshot document in imagenSnapshot.docs) {
+        await FirebaseFirestore.instance
+            .collection("imagenes")
+            .doc(document.id)
+            .delete();
+      }
       return true; // Eliminación exitosa
     } else {
-      return false; // No se encontró una imagen con la URL proporcionada
+      return false; // No se encontraron imágenes con el nombre de trabajador
     }
   } catch (e) {
-    print('Error al eliminar la imagen: $e');
+    print('Error al eliminar las imágenes: $e');
+    return false; // Error en la eliminación
+  }
+}
+
+Future<bool> borrarImagenesTrabajadores() async {
+  try {
+    final QuerySnapshot imagenSnapshot =
+        await FirebaseFirestore.instance.collection("imagenes").get();
+
+    if (imagenSnapshot.docs.isNotEmpty) {
+      for (QueryDocumentSnapshot document in imagenSnapshot.docs) {
+        await FirebaseFirestore.instance
+            .collection("imagenes")
+            .doc(document.id)
+            .delete();
+      }
+      return true; // Eliminación exitosa
+    } else {
+      return false; // No se encontraron imágenes en la colección
+    }
+  } catch (e) {
+    print('Error al eliminar las imágenes: $e');
     return false; // Error en la eliminación
   }
 }

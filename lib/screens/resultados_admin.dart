@@ -296,6 +296,124 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
                 );
               }).toList(),
             ),
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceEvenly, // Alineación de los botones
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    if (selectedRow != -1) {
+                      // Accede a los datos de la fila seleccionada
+                      final selectedMedicion =
+                          medicionesTrabajador[selectedRow];
+                      final imageUrl = selectedMedicion['imageUrl'];
+
+                      // Muestra un cuadro de diálogo de confirmación
+                      bool confirmarBorrado = await showDialog(
+                        context:
+                            context, // Asegúrate de tener acceso al contexto actual
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Confirmar borrado'),
+                            content: Text(
+                                '¿Está seguro de que desea borrar esta imagen?'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text('Cancelar'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(
+                                      false); // Cierra el cuadro de diálogo y retorna false
+                                },
+                              ),
+                              TextButton(
+                                child: Text('Borrar'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(
+                                      true); // Cierra el cuadro de diálogo y retorna true
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirmarBorrado == true) {
+                        bool imagenBorrada = await borrarImagen(imageUrl);
+                        if (imagenBorrada) {
+                          if (dropdownValue == "Todos los trabajadores") {
+                            // Cargar todas las mediciones para todos los trabajadores
+                            _cargarMedicionesTodosTrabajadores();
+                          } else {
+                            // Cargar mediciones solo para el trabajador seleccionado
+                            _cargarMedicionesTrabajador(dropdownValue);
+                          }
+                        }
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                        vertical: 1, horizontal: 1), // Ajusta el padding
+                  ),
+                  child: Text('Borrar Imagen Seleccionada'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (true) {
+                      // Accede a los datos de la fila seleccionada
+                      // Muestra un cuadro de diálogo de confirmación
+                      bool confirmarBorrado = await showDialog(
+                        context:
+                            context, // Asegúrate de tener acceso al contexto actual
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Confirmar borrado'),
+                            content: Text(
+                                '¿Está seguro de que desea borrar todas sus imagenes? \n Este proceso no se puede deshacer.'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text('Cancelar'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(
+                                      false); // Cierra el cuadro de diálogo y retorna false
+                                },
+                              ),
+                              TextButton(
+                                child: Text('Borrar'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(
+                                      true); // Cierra el cuadro de diálogo y retorna true
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirmarBorrado == true) {
+                        if (dropdownValue == "Todos los trabajadores") {
+                          // Cargar todas las mediciones para todos los trabajadores
+                          await borrarImagenesTrabajadores();
+                          _cargarMedicionesTodosTrabajadores();
+                        } else {
+                          // Cargar mediciones solo para el trabajador seleccionado
+                          bool imagenBorrada =
+                              await borrarImagenesTrabajador(nombreTrabajador);
+                          if (imagenBorrada) {
+                            _cargarMedicionesTrabajador(dropdownValue);
+                          }
+                        }
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                        vertical: 1, horizontal: 1), // Ajusta el padding
+                  ),
+                  child: Text('Borrar todas las mediciones'),
+                ),
+              ],
+            ),
           ],
         ),
       ),
