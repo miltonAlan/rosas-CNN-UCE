@@ -12,7 +12,7 @@ class RegisterScreen extends StatelessWidget {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  String _selectedRole = 'administrador';
+  String _selectedRole = 'trabajador';
 
   Future<void> _register(BuildContext context) async {
     String name = _nameController.text;
