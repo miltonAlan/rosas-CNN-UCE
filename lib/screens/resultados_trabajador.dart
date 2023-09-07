@@ -5,16 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // Asegúrate de importar provider aquí
 import 'package:intl/intl.dart';
 
-class ResultadosAdmin extends StatefulWidget {
+class ResultadosTrabajador extends StatefulWidget {
   @override
   _MiPantallaDataTableState createState() => _MiPantallaDataTableState();
 }
 
-class _MiPantallaDataTableState extends State<ResultadosAdmin> {
+class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
   List<String> imagenesTrabajador = [];
   int selectedRow = -1; // Variable para rastrear la fila seleccionada.
-  List<String> dropdownOptions = [];
-  String dropdownValue = "Todos los trabajadores";
+  List<String> dropdownOptions = [
+    'trabajador 1',
+    'trabajador 2',
+    'trabajador 3',
+    'Todos los empleados'
+  ];
+  String dropdownValue = 'trabajador 1'; // Valor predeterminado
   String textoParametrizable =
       'Texto predeterminado'; // Puedes establecer el valor inicial según tus necesidades.
   List<Map<String, dynamic>> medicionesTrabajador = [];
@@ -70,49 +75,13 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
         Provider.of<TestResultProvider>(context).nombreTrabajador ??
             "Nombre no definido";
 
-    // Obtener los nombres de los trabajadores y actualizar las opciones del DropdownButton
-    obtenerNombresTrabajadores().then((nombres) {
-      setState(() {
-        dropdownOptions = nombres;
-        // dropdownValue = nombres.isNotEmpty ? nombres[0] : '';
-      });
-
-      // Luego, puedes cargar las mediciones del trabajador seleccionado, por ejemplo:
-      // _cargarMedicionesTrabajador(nombreTrabajador);
-    });
+    _cargarMedicionesTrabajador(nombreTrabajador);
   }
 
   Future<void> _cargarMedicionesTrabajador(String nombreTrabajador) async {
     try {
       medicionesTrabajador =
           await obtenerMedicionesTrabajador(nombreTrabajador);
-      List<String> imagenesTrabajadorObtenidas = [];
-      // Imprimir las mediciones
-      for (Map<String, dynamic> medicion in medicionesTrabajador) {
-        imagenesTrabajadorObtenidas.add(medicion['imageUrl']);
-        print('Fecha: ${medicion['fecha']}');
-        print('ImageUrl: ${medicion['imageUrl']}');
-        print('Nombre Trabajador: ${medicion['nombreTrabajador']}');
-        print('Rosas:');
-        if (medicion['rosas'] != null) {
-          for (int i = 0; i < medicion['rosas'].length; i++) {
-            print('  $i:');
-            print('    Altura: ${medicion['rosas'][i]['altura']}');
-          }
-        } else {
-          print('    Sin datos de rosas');
-        }
-        print('\n');
-      }
-      setState(() {
-        imagenesTrabajador = imagenesTrabajadorObtenidas;
-      });
-    } catch (error) {}
-  }
-
-  Future<void> _cargarMedicionesTodosTrabajadores() async {
-    try {
-      medicionesTrabajador = await obtenerMedicionesTrabajadores();
       List<String> imagenesTrabajadorObtenidas = [];
       // Imprimir las mediciones
       for (Map<String, dynamic> medicion in medicionesTrabajador) {
@@ -207,40 +176,7 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
                 }).toList(),
               ),
             ),
-// Modifica el Row que contiene el DropdownButton en el método build
-            Row(
-              children: [
-                Text(
-                  'Escoja un trabajador: ',
-                  style: TextStyle(
-                    fontSize: 18.0,
-                  ),
-                ),
-                DropdownButton<String>(
-                  // value: "Todos los trabajadores",
-                  value: dropdownValue,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      dropdownValue = newValue!;
-                      // Actualiza tus datos según la opción seleccionada.
-                      if (newValue == "Todos los trabajadores") {
-                        // Cargar todas las mediciones para todos los trabajadores
-                        _cargarMedicionesTodosTrabajadores();
-                      } else {
-                        // Cargar mediciones solo para el trabajador seleccionado
-                        _cargarMedicionesTrabajador(newValue);
-                      }
-                    });
-                  },
-                  items: <String>[...dropdownOptions].map((String option) {
-                    return DropdownMenuItem<String>(
-                      value: option,
-                      child: Text(option),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
+            // DropdownButton
             DataTable(
               showCheckboxColumn: true, // Esto oculta las casillas de selección
               horizontalMargin: 5, // Ajusta este valor según tus preferencias
@@ -266,12 +202,14 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
                   final fecha = formatoFecha.parse(
                       fechastr); // Intentar convertir la cadena en DateTime
 
-                  formattedFecha =
-                      DateFormat('dd/MMMM/yyyy HH:mm').format(fecha);
+                  formattedFecha = DateFormat('dd/MMMM/yyyy').format(fecha);
                 } catch (e) {
                   // Manejar el error si la cadena no es una fecha válida
                   formattedFecha = 'Fecha inválida';
                 }
+// Antes de construir la DataTable, ordena la lista de mediciones
+                medicionesTrabajador
+                    .sort((a, b) => b['fecha'].compareTo(a['fecha']));
 
                 return DataRow(
                   selected: selectedRow == index,
@@ -341,13 +279,8 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
                       if (confirmarBorrado == true) {
                         bool imagenBorrada = await borrarImagen(imageUrl);
                         if (imagenBorrada) {
-                          if (dropdownValue == "Todos los trabajadores") {
-                            // Cargar todas las mediciones para todos los trabajadores
-                            _cargarMedicionesTodosTrabajadores();
-                          } else {
-                            // Cargar mediciones solo para el trabajador seleccionado
-                            _cargarMedicionesTrabajador(dropdownValue);
-                          }
+                          _cargarMedicionesTrabajador(
+                              selectedMedicion['nombreTrabajador']);
                         }
                       }
                     }
@@ -392,17 +325,10 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
                       );
 
                       if (confirmarBorrado == true) {
-                        if (dropdownValue == "Todos los trabajadores") {
-                          // Cargar todas las mediciones para todos los trabajadores
-                          await borrarImagenesTrabajadores();
-                          _cargarMedicionesTodosTrabajadores();
-                        } else {
-                          // Cargar mediciones solo para el trabajador seleccionado
-                          bool imagenBorrada =
-                              await borrarImagenesTrabajador(nombreTrabajador);
-                          if (imagenBorrada) {
-                            _cargarMedicionesTrabajador(dropdownValue);
-                          }
+                        bool imagenBorrada =
+                            await borrarImagenesTrabajador(nombreTrabajador);
+                        if (imagenBorrada) {
+                          _cargarMedicionesTrabajador(nombreTrabajador);
                         }
                       }
                     }
@@ -411,7 +337,7 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
                     padding: EdgeInsets.symmetric(
                         vertical: 1, horizontal: 1), // Ajusta el padding
                   ),
-                  child: Text('Borrar todas las mediciones'),
+                  child: Text('Borrar todas mis mediciones'),
                 ),
               ],
             ),

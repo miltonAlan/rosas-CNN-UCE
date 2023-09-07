@@ -1,7 +1,14 @@
+import 'package:ejemplo/providers/firebase_ejemplo.dart';
+import 'package:ejemplo/screens/text_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'dart:convert'; // Importa la librería dart:convert
+import 'dart:math';
+import 'dart:core';
+
+import 'package:provider/provider.dart';
 
 class CapturedImagesModel extends ChangeNotifier {
   List<String> _capturedImages = [];
@@ -10,6 +17,17 @@ class CapturedImagesModel extends ChangeNotifier {
   List<String> get capturedImages => _capturedImages;
   List<String> get capturedImagesProcessed =>
       _capturedImagesProcessed; // Getter para la nueva lista
+
+  List<dynamic> _jsonArray = [];
+  List<List<dynamic>> listOfJsonArrays = [];
+
+  // Getter para jsonArray
+  List<dynamic> get jsonArray => _jsonArray;
+
+  // Setter para jsonArray
+  set jsonArray(List<dynamic> value) {
+    _jsonArray = value;
+  }
 
   void addCapturedImage(String imagePath) {
     _capturedImages.add(imagePath);
@@ -37,15 +55,9 @@ class CapturedImagesModel extends ChangeNotifier {
       // Carga la imagen utilizando el paquete 'image'
       img.Image originalImage =
           img.decodeImage(File(imagePath).readAsBytesSync())!;
-
+      // print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx $jsonString');
       List<dynamic> jsonArray = jsonDecode(jsonString);
-
-      // Iterar a través de la lista y acceder a las propiedades de cada objeto JSON
-      for (var jsonObject in jsonArray) {
-        _printJsonObject(jsonObject);
-        print('---'); // Separador entre objetos
-      }
-
+      listOfJsonArrays.add(jsonArray);
       List<RectangleParams> rectangles =
           []; // Crea una lista vacía para almacenar los objetos RectangleParams.
 
@@ -53,8 +65,8 @@ class CapturedImagesModel extends ChangeNotifier {
         String imageFilename = jsonObject['image_filename'];
         double ratio = jsonObject['ratio'].toDouble();
 
-        print('image_filename: $imageFilename');
-        print('ratio: $ratio');
+        // print('image_filename: $imageFilename');
+        // print('ratio: $ratio');
 
         List<dynamic> detections = jsonObject['detections'];
         for (var detection in detections) {
@@ -64,7 +76,7 @@ class CapturedImagesModel extends ChangeNotifier {
               : (detection['label'] == "1" ? "tallo" : "hoja");
           String placeEtiqueta = label == "capullo"
               ? "izquierda"
-              : (label == "tallo" ? "izquierda" : "derecha");
+              : (label == "tallo" ? "izquierda" : "superior");
 
           double score = detection['score'];
 
@@ -73,11 +85,24 @@ class CapturedImagesModel extends ChangeNotifier {
               : (label == "capullo"
                   ? img.getColor(0, 0, 255)
                   : img.getColor(0, 255, 0));
-          String text = label == "tallo"
-              ? 'Tallo: \nlargo: ${(box[3].toInt() / ratio).toStringAsFixed(1)} cm'
-              : (label == "capullo"
-                  ? 'Capullo: \nlargo: ${(box[3].toInt() / ratio).toStringAsFixed(1)} cm \nancho: ${(box[2].toInt() / ratio).toStringAsFixed(1)} cm'
-                  : '');
+// Supongamos que tienes las siguientes variables para el tallo y el capullo:
+          double largo = box[3].toInt() / ratio;
+          double ancho = box[2].toInt() / ratio;
+
+          String text;
+
+          if (label == "tallo") {
+            text = 'Tallo: \nlargo: ${largo.toStringAsFixed(1)} cm';
+          } else if (label == "capullo") {
+            text =
+                'Capullo: \nlargo: ${largo.toStringAsFixed(1)} cm \nancho: ${ancho.toStringAsFixed(1)} cm';
+          } else {
+            largo = largo.ceilToDouble();
+            text = 'Altura Rosa: ${largo.toStringAsFixed(0)} cm';
+          }
+
+// Ahora puedes usar la variable 'text' según tu necesidad.
+
           // Crear un objeto RectangleParams y agregarlo a la lista rectangles.
           RectangleParams rectangle = RectangleParams(
             x: box[0].toInt(),
@@ -93,10 +118,10 @@ class CapturedImagesModel extends ChangeNotifier {
           rectangles
               .add(rectangle); // Agregar el objeto RectangleParams a la lista.
 
-          print('Detection:');
-          print('  box: $box');
-          print('  label: $label');
-          print('  score: $score');
+          // print('Detection:');
+          // print('  box: $box');
+          // print('  label: $label');
+          // print('  score: $score');
         }
       }
       img.Image modifiedImage =
@@ -143,6 +168,8 @@ class CapturedImagesModel extends ChangeNotifier {
 
   void clearCapturedImagesProcessed() {
     _capturedImagesProcessed.clear(); // Función para limpiar la nueva lista
+    listOfJsonArrays = [];
+
     notifyListeners();
   }
 
@@ -197,6 +224,173 @@ class CapturedImagesModel extends ChangeNotifier {
     }
 
     return modifiedImage;
+  }
+
+  Future<void> subirTodasLasImagenesConTexto(BuildContext context) async {
+    DateTime now = DateTime.now();
+    String formattedDate =
+        '${now.year}_${now.month}_${now.day}_${now.hour}_${now.minute}';
+    String fecha = formattedDate;
+
+    final testResultProvider =
+        Provider.of<TestResultProvider>(context, listen: false);
+    String nombreTrabajador =
+        testResultProvider.nombreTrabajador ?? "Nombre no definido";
+
+    print('Tamaño de listOfJsonArrays: ${listOfJsonArrays.length}');
+
+    // Itera a través de cada elemento de listOfJsonArrays y los imprime
+
+// Crear una lista para almacenar los objetos que cumplan con los criterios
+    List<Map<String, dynamic>> resultList = [];
+
+    for (int i = 0; i < listOfJsonArrays.length; i++) {
+      Map<String, dynamic> jsonObject = listOfJsonArrays[i][0];
+      String imageFilename = jsonObject['image_filename'];
+      double ratio = jsonObject['ratio'];
+
+      // Filtrar las detecciones que tengan label 'rosa'
+      List<dynamic> detections = jsonObject['detections'];
+      List<Map<String, dynamic>> rosaDetections = [];
+
+      for (int j = 0; j < detections.length; j++) {
+        Map<String, dynamic> detection = detections[j];
+        String label = detection['label'];
+        if (label == 'rosa') {
+          rosaDetections.add(detection);
+        }
+      }
+
+      // Verificar si hay al menos dos detecciones 'rosa'
+      if (rosaDetections.length >= 1) {
+        // Crear un objeto con 'image_filename', 'ratio', 'box', y 'label'
+        Map<String, dynamic> resultObject = {
+          'image_filename': imageFilename,
+          'ratio': ratio,
+          'rosa_detections': rosaDetections,
+        };
+
+        // Agregar el objeto a la lista de resultados
+        resultList.add(resultObject);
+      }
+    }
+
+    List<String> uniqueDetectionsList = [];
+    List<Map<String, dynamic>> listaBoxRosa = [];
+
+    for (int i = 0; i < resultList.length; i++) {
+      Map<String, dynamic> resultObject = resultList[i];
+      // print('image_filename: ${resultObject['image_filename']}');
+      // print('ratio: ${resultObject['ratio']}');
+
+      Set<String> uniqueDetections = Set<String>();
+
+      for (int j = 0; j < resultObject['rosa_detections'].length; j++) {
+        Map<String, dynamic> rosaDetection = resultObject['rosa_detections'][j];
+        String detectionInfo =
+            'box: ${rosaDetection['box']}, label: ${rosaDetection['label']}';
+
+        if (!uniqueDetections.contains(detectionInfo)) {
+          // print('Detección $j:');
+          // print(detectionInfo);
+          uniqueDetections.add(detectionInfo);
+          uniqueDetectionsList.add(detectionInfo);
+        }
+      }
+
+      // Después de procesar las detecciones únicas, crea el objeto resultObject y agrégalo a listaBoxRosa.
+      Map<String, dynamic> updatedResultObject = {
+        'image_filename': resultObject['image_filename'],
+        'ratio': resultObject['ratio'],
+        'rosa_detections':
+            uniqueDetectionsList, // Aquí se usa uniqueDetectionsList
+      };
+      listaBoxRosa.add(updatedResultObject);
+
+      //vaciar xd
+      uniqueDetectionsList = [];
+    }
+
+    //impresion validacion final
+    for (int i = 0; i < listaBoxRosa.length; i++) {
+      Map<String, dynamic> resultObject = listaBoxRosa[i];
+      print('Resultado $i:');
+      print('image_filename: ${resultObject['image_filename']}');
+      print('ratio: ${resultObject['ratio']}');
+      print('rosa_detections:');
+
+      // Imprimir cada detección única
+      List<String> uniqueDetectionsList = resultObject['rosa_detections'];
+      for (int j = 0; j < uniqueDetectionsList.length; j++) {
+        print('Detección $j: ${uniqueDetectionsList[j]}');
+      }
+    }
+
+    for (String imagePath in _capturedImagesProcessed) {
+      for (int i = 0; i < listaBoxRosa.length; i++) {
+        Map<String, dynamic> resultObject = listaBoxRosa[i];
+        String imageFilename = resultObject['image_filename'];
+
+        if (imagePath.contains(imageFilename)) {
+          List<Map<String, dynamic>> rosasData = [];
+
+          // Iterar a través de 'rosa_detections' y calcular 'altura' para cada uno
+          for (dynamic rosaDetection in resultObject['rosa_detections']) {
+            double ratio = resultObject['ratio'];
+
+            // Calcular la altura dividiendo 'h' por 'ratio'
+            if (rosaDetection is String) {
+              // Buscar los valores dentro de corchetes [ ] y dividirlos por comas
+              List<String> valores = rosaDetection
+                  .replaceAll('[', '')
+                  .replaceAll(']', '')
+                  .replaceAll('label', '')
+                  .replaceAll('box', '')
+                  .replaceAll(':', '')
+                  .replaceAll('rosa', '')
+                  .split(',');
+
+              // Tomar el último valor y convertirlo a double
+              if (valores.isNotEmpty) {
+                print("valoresXXXXXXXXXXXx $valores");
+                print("valoresXXXXXXXXXXXx ${valores[3]}");
+                try {
+                  double altura = double.parse(valores[3]) / ratio;
+                  int alturaRedondeada = altura.ceil();
+
+                  // Crear un mapa con la altura calculada
+                  Map<String, dynamic> alturaData = {
+                    'altura': alturaRedondeada,
+                  };
+                  rosasData.add(alturaData);
+                  // Aquí puedes usar 'altura' como sea necesario
+                  print('Altura: $altura');
+                } catch (e) {
+                  print('Error al convertir altura: $e');
+                }
+              }
+            }
+          }
+
+          // Luego, puedes utilizar 'rosasData' en tu función de subida de imagen
+          bool subidaExitosa = await subirImagenConTexto(
+            rosasData,
+            imagePath,
+            nombreTrabajador,
+            fecha,
+          );
+
+          if (subidaExitosa) {
+            print('Imagen subida con éxito: $imagePath');
+          } else {
+            print('Error al subir la imagen: $imagePath');
+          }
+
+          // Rompe el bucle una vez que se encuentra la coincidencia
+          break;
+        }
+      }
+    }
   }
 }
 

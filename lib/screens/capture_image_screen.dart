@@ -1,3 +1,4 @@
+import 'package:ejemplo/screens/drawer_modular.dart';
 import 'package:ejemplo/screens/ejemplo_uso_firebase.dart';
 import 'package:ejemplo/screens/resultados_admin.dart';
 import 'package:ejemplo/screens/text_provider.dart';
@@ -14,6 +15,7 @@ import 'dart:convert'; // Asegúrate de agregar esta línea
 import 'package:ejemplo/providers/captured_images_model.dart';
 import 'package:ejemplo/screens/auth_screen.dart';
 import 'package:ejemplo/screens/measurement_screen.dart';
+import 'package:image/image.dart' as img;
 
 class CaptureImageScreen extends StatefulWidget {
   @override
@@ -29,10 +31,15 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
   Widget build(BuildContext context) {
     final capturedImagesModel = Provider.of<CapturedImagesModel>(context);
     bool hasImages = capturedImagesModel.capturedImages.isNotEmpty;
+    final String rol =
+        Provider.of<TestResultProvider>(context).rol ?? "Rol no definido";
+    final String nombreTrabajador =
+        Provider.of<TestResultProvider>(context).nombreTrabajador ??
+            "Nombre no definido";
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Pantalla de Captura de Imagen'),
+        title: Text('Carga de Fotografias'),
         actions: [
           Row(
             children: [
@@ -48,53 +55,8 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-              child: Text('Bienvenido a la aplicación'),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-            ListTile(
-              title: Text('Carga imágenes desde cámara/galería'),
-              onTap: () {
-                _onOptionSelected(context, '/capture', CaptureImageScreen());
-              },
-            ),
-            ListTile(
-              title: Text('EJEMPLO USO FIREBASE'),
-              onTap: () {
-                _onOptionSelected(
-                    context, '/ejemplofirebase', EjemploFirebase());
-              },
-            ),
-            ListTile(
-              title: Text('Pantalla de resultados'),
-              onTap: () {
-                _onOptionSelected(context, '/measurement', MeasurementScreen());
-              },
-            ),
-            ListTile(
-              title: Text('Resultados - ADMIN'),
-              onTap: () {
-                _onOptionSelected(
-                    context, '/resultadosAdmin', ResultadosAdmin());
-              },
-            ),
-            ListTile(
-              title: Text('Cerrar Sesión'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AuthScreen()),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer:
+          AppDrawerAndNavigation.buildDrawer(context, rol, nombreTrabajador),
       body: Center(
         child: capturedImagesModel.capturedImages.isEmpty
             ? Text('No se ha capturado ninguna imagen')
@@ -203,9 +165,37 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     final pickedFile = await imagePicker.getImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
+      final File compressedImage = await compressImage(File(pickedFile.path));
       Provider.of<CapturedImagesModel>(context, listen: false)
-          .addCapturedImage(pickedFile.path);
+          .addCapturedImage(compressedImage.path);
     }
+  }
+
+  Future<File> compressImage(File file) async {
+    // Lee la imagen original
+    final imageBytes = await file.readAsBytes();
+
+    // Decodifica la imagen
+    img.Image? image = img.decodeImage(imageBytes);
+
+    if (image == null) {
+      // Manejar la situación en la que no se puede decodificar la imagen
+      throw Exception('No se pudo decodificar la imagen.');
+    }
+
+    // Redimensiona la imagen si es necesario
+    final maxWidth = 800; // Cambia este valor según tus necesidades
+    if (image.width > maxWidth) {
+      image = img.copyResize(image, width: maxWidth);
+    }
+
+    // Comprime la imagen reduciendo su calidad
+    final compressedFile =
+        File('${file.parent.path}/compressed_${file.uri.pathSegments.last}');
+    await compressedFile.writeAsBytes(img.encodeJpg(image,
+        quality: 70)); // Ajusta la calidad según tus necesidades
+
+    return compressedFile;
   }
 
   Future<void> _pickMultipleImagesFromGallery() async {
@@ -288,10 +278,13 @@ class _CaptureImageScreenState extends State<CaptureImageScreen> {
     final testResultProvider =
         Provider.of<TestResultProvider>(context, listen: false);
     String url = testResultProvider.text; // Acceder a _testResult
+    String rol = testResultProvider.rol; // Acceder a role
     final apiUrl = url + apiRuta;
-    print('URLXXXXXXXXXXXXx' + url);
-    print('apirutaXXXXXXXXXXXXx' + apiRuta);
-    print("apiUrlXXXXXXXXx: " + apiUrl);
+    // print('URLXXXXXXXXXXXXx' + url);
+    // print('apirutaXXXXXXXXXXXXx' + apiRuta);
+    // print("apiUrlXXXXXXXXx: " + apiUrl);
+    // print("rol: " + rol);
+
     try {
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
       request.files
