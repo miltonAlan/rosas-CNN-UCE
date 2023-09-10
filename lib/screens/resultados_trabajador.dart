@@ -33,6 +33,14 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
     'Personalizado',
   ];
   DateTime? selectedDate;
+  DateTime? pickedDateYear;
+  DateTime? pickedDateMonth;
+  DateTime? pickedDateDaily;
+  DateTime? startDate;
+  DateTime? endDate;
+  DateTimeRange? pickedDatesQuincenal;
+  String obsion = "";
+
   Future<DateTime?> _showYearPicker(BuildContext context) async {
     return showDialog<DateTime>(
       context: context,
@@ -62,26 +70,32 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
 
   Future<void> _selectDate(BuildContext context, String dropdownValue,
       String nombreTrabajador) async {
-    DateTime? pickedDate;
-    DateTime? startDate;
-    DateTime? endDate;
-    DateTimeRange? pickedDatesQuincenal;
     switch (dropdownValue) {
       case 'Anual':
+        setState(() {
+          obsion = 'Anual';
+        });
         // Permite seleccionar solo el año
-        pickedDate = await _showYearPicker(context);
-        _cargarMedicionesTrabajador(nombreTrabajador, anio: pickedDate?.year);
+        pickedDateYear = await _showYearPicker(context);
+        _cargarMedicionesTrabajador(nombreTrabajador,
+            anio: pickedDateYear?.year);
         break;
       case 'Mensual':
+        setState(() {
+          obsion = 'Mensual';
+        });
         // Permite seleccionar un mes
-        pickedDate = await showMonthPicker(
+        pickedDateMonth = await showMonthPicker(
           context: context,
           initialDate: DateTime.now(),
         );
         _cargarMedicionesTrabajador(nombreTrabajador,
-            mesEspecifico: pickedDate);
+            mesEspecifico: pickedDateMonth);
         break;
       case 'Personalizado':
+        setState(() {
+          obsion = 'Personalizado';
+        });
         // Permite seleccionar un rango de dos fechas
         pickedDatesQuincenal = await showDateRangePicker(
           context: context,
@@ -96,26 +110,32 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
           },
         );
         if (pickedDatesQuincenal != null) {
-          startDate = pickedDatesQuincenal.start;
-          endDate = pickedDatesQuincenal.end;
+          startDate = pickedDatesQuincenal?.start;
+          endDate = pickedDatesQuincenal?.end;
           _cargarMedicionesTrabajador(nombreTrabajador,
               fechaInicio: startDate, fechaFin: endDate);
         }
         break;
       case 'Diario':
+        setState(() {
+          obsion = 'Diario';
+        });
         // Permite seleccionar un día
-        pickedDate = await showDatePicker(
+        pickedDateDaily = await showDatePicker(
           context: context,
           initialDate: DateTime.now(),
           firstDate: DateTime(2000),
           lastDate: DateTime(2101),
         );
         _cargarMedicionesTrabajador(nombreTrabajador,
-            diaEspecifico: pickedDate);
+            diaEspecifico: pickedDateDaily);
         break;
       case 'Total histórico':
+        setState(() {
+          obsion = 'Total histórico';
+        });
         _cargarMedicionesTrabajador(nombreTrabajador, cargarTodo: true);
-
+        break;
       default:
         // Opción no válida
         break;
@@ -177,6 +197,10 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
     // Llamar a _cargarMedicionesTrabajador con la fecha actual
     final DateTime? fechaActual = DateTime.now();
     _cargarMedicionesTrabajador(nombreTrabajador, diaEspecifico: fechaActual);
+    setState(() {
+      obsion = 'Diario';
+      pickedDateDaily = fechaActual;
+    });
   }
 
   Future<void> _cargarMedicionesTrabajador(String nombreTrabajador,
@@ -393,8 +417,39 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
                       if (confirmarBorrado == true) {
                         bool imagenBorrada = await borrarImagen(imageUrl);
                         if (imagenBorrada) {
-                          _cargarMedicionesTrabajador(
-                              selectedMedicion['nombreTrabajador']);
+                          // _cargarMedicionesTrabajador(
+                          //     selectedMedicion['nombreTrabajador']);
+                          switch (obsion) {
+                            case 'Anual':
+                              _cargarMedicionesTrabajador(
+                                  selectedMedicion['nombreTrabajador'],
+                                  anio: pickedDateYear?.year);
+                              break;
+                            case 'Mensual':
+                              _cargarMedicionesTrabajador(
+                                  selectedMedicion['nombreTrabajador'],
+                                  mesEspecifico: pickedDateMonth);
+                              break;
+                            case 'Personalizado':
+                              _cargarMedicionesTrabajador(
+                                  selectedMedicion['nombreTrabajador'],
+                                  fechaInicio: pickedDatesQuincenal?.start,
+                                  fechaFin: pickedDatesQuincenal?.end);
+                              break;
+                            case 'Diario':
+                              _cargarMedicionesTrabajador(
+                                  selectedMedicion['nombreTrabajador'],
+                                  diaEspecifico: pickedDateDaily);
+                              break;
+                            case 'Total histórico':
+                              _cargarMedicionesTrabajador(
+                                  selectedMedicion['nombreTrabajador'],
+                                  cargarTodo: true);
+                              break;
+                            default:
+                              // Opción no válida
+                              break;
+                          }
                         }
                       }
                     }
