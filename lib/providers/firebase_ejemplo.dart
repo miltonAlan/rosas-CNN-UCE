@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ejemplo/screens/text_provider.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 FirebaseFirestore db = FirebaseFirestore.instance;
@@ -108,7 +109,12 @@ Future<bool> signInWithEmailAndPassword(
 }
 
 Future<List<Map<String, dynamic>>> obtenerMedicionesTrabajador(
-    String trabajador) async {
+    String trabajador,
+    {DateTime? fechaInicio,
+    DateTime? fechaFin,
+    int? mes,
+    int? dia,
+    int? anio}) async {
   List<Map<String, dynamic>> mediciones = [];
   try {
     final QuerySnapshot trabajadorData = await db
@@ -116,27 +122,15 @@ Future<List<Map<String, dynamic>>> obtenerMedicionesTrabajador(
         .where('nombreTrabajador', isEqualTo: trabajador)
         .get();
 
+    final customFormat = DateFormat('yyyy_MM_dd_HH_mm');
+
     for (QueryDocumentSnapshot doc in trabajadorData.docs) {
-      mediciones.add(doc.data() as Map<String, dynamic>);
+      String fechaMedicion = doc['fecha'];
+      DateTime fecha = customFormat.parse(fechaMedicion);
+      if (anio != null && fecha.year == anio) {
+        mediciones.add(doc.data() as Map<String, dynamic>);
+      }
     }
-
-    // // Imprimir las mediciones
-    // for (Map<String, dynamic> medicion in mediciones) {
-    //   print('Fecha: ${medicion['fecha']}');
-    //   print('ImageUrl: ${medicion['imageUrl']}');
-    //   print('Nombre Trabajador: ${medicion['nombreTrabajador']}');
-    //   print('Rosas:');
-    //   if (medicion['rosas'] != null) {
-    //     for (int i = 0; i < medicion['rosas'].length; i++) {
-    //       print('  $i:');
-    //       print('    Altura: ${medicion['rosas'][i]['altura']}');
-    //     }
-    //   } else {
-    //     print('    Sin datos de rosas');
-    //   }
-    //   print('\n');
-    // }
-
     return mediciones;
   } catch (e) {
     print('Error al obtener mediciones del trabajador: $e');

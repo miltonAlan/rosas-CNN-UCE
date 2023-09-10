@@ -2,6 +2,7 @@ import 'package:ejemplo/providers/firebase_ejemplo.dart';
 import 'package:ejemplo/screens/drawer_modular.dart';
 import 'package:ejemplo/screens/text_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:provider/provider.dart'; // Asegúrate de importar provider aquí
 import 'package:intl/intl.dart';
 
@@ -23,6 +24,99 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
   String textoParametrizable =
       'Texto predeterminado'; // Puedes establecer el valor inicial según tus necesidades.
   List<Map<String, dynamic>> medicionesTrabajador = [];
+  String dropdownValueDate = 'Diario'; // Valor predeterminado
+  List<String> dropdownOptionsDate = [
+    'Total histórico',
+    'Anual',
+    'Mensual',
+    'Diario',
+    'Personalizado',
+  ];
+  DateTime? selectedDate;
+  Future<DateTime?> _showYearPicker(BuildContext context) async {
+    return showDialog<DateTime>(
+      context: context,
+      builder: (BuildContext context) {
+        DateTime _selectedYear = DateTime.now();
+
+        return AlertDialog(
+          title: Text("Select Year"),
+          content: Container(
+            width: 300,
+            height: 300,
+            child: YearPicker(
+              firstDate: DateTime(DateTime.now().year - 100, 1),
+              lastDate: DateTime(DateTime.now().year + 100, 1),
+              initialDate: DateTime.now(),
+              selectedDate: _selectedYear,
+              onChanged: (DateTime dateTime) {
+                _selectedYear = dateTime;
+                Navigator.pop(context, _selectedYear);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _selectDate(BuildContext context, String dropdownValue,
+      String nombreTrabajador) async {
+    DateTime? pickedDate;
+    DateTime? startDate;
+    DateTime? endDate;
+    DateTimeRange? pickedDatesQuincenal;
+    switch (dropdownValue) {
+      case 'Anual':
+        // Permite seleccionar solo el año
+        pickedDate = await _showYearPicker(context);
+        print("pickedDate $pickedDate");
+        _cargarMedicionesTrabajador(nombreTrabajador, anio: pickedDate?.year);
+        break;
+      case 'Mensual':
+        // Permite seleccionar un mes
+        pickedDate = await showMonthPicker(
+          context: context,
+          initialDate: DateTime.now(),
+        );
+        print("pickedDate $pickedDate");
+        break;
+      case 'Personalizado':
+        // Permite seleccionar un rango de dos fechas
+        pickedDatesQuincenal = await showDateRangePicker(
+          context: context,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2101),
+          builder: (BuildContext context, Widget? child) {
+            return Theme(
+              data: ThemeData
+                  .light(), // Puedes personalizar el tema si es necesario
+              child: child!,
+            );
+          },
+        );
+        if (pickedDatesQuincenal != null) {
+          startDate = pickedDatesQuincenal.start;
+          endDate = pickedDatesQuincenal.end;
+          print("startDate $startDate");
+          print("endDate $endDate");
+        }
+        break;
+      case 'Diario':
+        // Permite seleccionar un día
+        pickedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2101),
+        );
+        print("pickedDate $pickedDate");
+        break;
+      default:
+        // Opción no válida
+        break;
+    }
+  }
 
   void _showImageDetails(int index) {
     setState(() {
@@ -78,32 +172,35 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
     _cargarMedicionesTrabajador(nombreTrabajador);
   }
 
-  Future<void> _cargarMedicionesTrabajador(String nombreTrabajador) async {
-    try {
-      medicionesTrabajador =
-          await obtenerMedicionesTrabajador(nombreTrabajador);
-      List<String> imagenesTrabajadorObtenidas = [];
-      // Imprimir las mediciones
-      for (Map<String, dynamic> medicion in medicionesTrabajador) {
-        imagenesTrabajadorObtenidas.add(medicion['imageUrl']);
-        print('Fecha: ${medicion['fecha']}');
-        print('ImageUrl: ${medicion['imageUrl']}');
-        print('Nombre Trabajador: ${medicion['nombreTrabajador']}');
-        print('Rosas:');
-        if (medicion['rosas'] != null) {
-          for (int i = 0; i < medicion['rosas'].length; i++) {
-            print('  $i:');
-            print('    Altura: ${medicion['rosas'][i]['altura']}');
+  Future<void> _cargarMedicionesTrabajador(String nombreTrabajador,
+      {int? anio}) async {
+    if (anio != null) {
+      try {
+        medicionesTrabajador =
+            await obtenerMedicionesTrabajador(nombreTrabajador, anio: anio);
+        List<String> imagenesTrabajadorObtenidas = [];
+// Imprimir las mediciones
+        for (Map<String, dynamic> medicion in medicionesTrabajador) {
+          imagenesTrabajadorObtenidas.add(medicion['imageUrl']);
+          print('Fecha: ${medicion['fecha']}');
+          print('ImageUrl: ${medicion['imageUrl']}');
+          print('Nombre Trabajador: ${medicion['nombreTrabajador']}');
+          print('Rosas:');
+          if (medicion['rosas'] != null) {
+            for (int i = 0; i < medicion['rosas'].length; i++) {
+              print('  $i:');
+              print('    Altura: ${medicion['rosas'][i]['altura']}');
+            }
+          } else {
+            print('    Sin datos de rosas');
           }
-        } else {
-          print('    Sin datos de rosas');
+          print('\n');
         }
-        print('\n');
-      }
-      setState(() {
-        imagenesTrabajador = imagenesTrabajadorObtenidas;
-      });
-    } catch (error) {}
+        setState(() {
+          imagenesTrabajador = imagenesTrabajadorObtenidas;
+        });
+      } catch (error) {}
+    }
   }
 
   @override
@@ -177,6 +274,22 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
               ),
             ),
             // DropdownButton
+            DropdownButton<String>(
+              value: dropdownValueDate,
+              onChanged: (String? newValue) {
+                setState(() {
+                  dropdownValueDate = newValue!;
+                  _selectDate(context, dropdownValueDate, nombreTrabajador);
+                });
+              },
+              items: dropdownOptionsDate
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
             DataTable(
               showCheckboxColumn: true, // Esto oculta las casillas de selección
               horizontalMargin: 5, // Ajusta este valor según tus preferencias
