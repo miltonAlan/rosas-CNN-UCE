@@ -148,7 +148,6 @@ Future<List<Map<String, dynamic>>> obtenerMedicionesTrabajador(
         }
       }
       if (fechaInicio != null && fechaFin != null) {
-        print("entra if");
         if (fechaInicio.year <= fecha.year &&
             fecha.year <= fechaFin.year &&
             fechaInicio.month <= fecha.month &&

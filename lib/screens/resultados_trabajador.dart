@@ -70,7 +70,6 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
       case 'Anual':
         // Permite seleccionar solo el año
         pickedDate = await _showYearPicker(context);
-        print("pickedDate $pickedDate");
         _cargarMedicionesTrabajador(nombreTrabajador, anio: pickedDate?.year);
         break;
       case 'Mensual':
@@ -79,7 +78,6 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
           context: context,
           initialDate: DateTime.now(),
         );
-        print("pickedDate $pickedDate");
         _cargarMedicionesTrabajador(nombreTrabajador,
             mesEspecifico: pickedDate);
         break;
@@ -100,8 +98,6 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
         if (pickedDatesQuincenal != null) {
           startDate = pickedDatesQuincenal.start;
           endDate = pickedDatesQuincenal.end;
-          print("startDate $startDate");
-          print("endDate $endDate");
           _cargarMedicionesTrabajador(nombreTrabajador,
               fechaInicio: startDate, fechaFin: endDate);
         }
@@ -114,7 +110,6 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
           firstDate: DateTime(2000),
           lastDate: DateTime(2101),
         );
-        print("pickedDate $pickedDate");
         _cargarMedicionesTrabajador(nombreTrabajador,
             diaEspecifico: pickedDate);
         break;
