@@ -112,9 +112,10 @@ Future<List<Map<String, dynamic>>> obtenerMedicionesTrabajador(
     String trabajador,
     {DateTime? fechaInicio,
     DateTime? fechaFin,
-    int? mes,
-    int? dia,
-    int? anio}) async {
+    DateTime? diaEspecifico,
+    DateTime? mesEspecifico,
+    int? anio,
+    bool? cargarTodo}) async {
   List<Map<String, dynamic>> mediciones = [];
   try {
     final QuerySnapshot trabajadorData = await db
@@ -122,13 +123,40 @@ Future<List<Map<String, dynamic>>> obtenerMedicionesTrabajador(
         .where('nombreTrabajador', isEqualTo: trabajador)
         .get();
 
-    final customFormat = DateFormat('yyyy_MM_dd_HH_mm');
+    final customFormat = DateFormat('yyyy_MM_dd');
 
     for (QueryDocumentSnapshot doc in trabajadorData.docs) {
       String fechaMedicion = doc['fecha'];
       DateTime fecha = customFormat.parse(fechaMedicion);
+      if (cargarTodo != null && cargarTodo == true) {
+        mediciones.add(doc.data() as Map<String, dynamic>);
+      }
       if (anio != null && fecha.year == anio) {
         mediciones.add(doc.data() as Map<String, dynamic>);
+      }
+      if (diaEspecifico != null) {
+        if (fecha.year == diaEspecifico.year &&
+            fecha.month == diaEspecifico.month &&
+            fecha.day == diaEspecifico.day) {
+          mediciones.add(doc.data() as Map<String, dynamic>);
+        }
+      }
+      if (mesEspecifico != null) {
+        if (fecha.year == mesEspecifico.year &&
+            fecha.month == mesEspecifico.month) {
+          mediciones.add(doc.data() as Map<String, dynamic>);
+        }
+      }
+      if (fechaInicio != null && fechaFin != null) {
+        print("entra if");
+        if (fechaInicio.year <= fecha.year &&
+            fecha.year <= fechaFin.year &&
+            fechaInicio.month <= fecha.month &&
+            fecha.month <= fechaFin.month &&
+            fechaInicio.day <= fecha.day &&
+            fecha.day <= fechaFin.day) {
+          mediciones.add(doc.data() as Map<String, dynamic>);
+        }
       }
     }
     return mediciones;

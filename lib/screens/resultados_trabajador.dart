@@ -80,6 +80,8 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
           initialDate: DateTime.now(),
         );
         print("pickedDate $pickedDate");
+        _cargarMedicionesTrabajador(nombreTrabajador,
+            mesEspecifico: pickedDate);
         break;
       case 'Personalizado':
         // Permite seleccionar un rango de dos fechas
@@ -100,6 +102,8 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
           endDate = pickedDatesQuincenal.end;
           print("startDate $startDate");
           print("endDate $endDate");
+          _cargarMedicionesTrabajador(nombreTrabajador,
+              fechaInicio: startDate, fechaFin: endDate);
         }
         break;
       case 'Diario':
@@ -111,7 +115,12 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
           lastDate: DateTime(2101),
         );
         print("pickedDate $pickedDate");
+        _cargarMedicionesTrabajador(nombreTrabajador,
+            diaEspecifico: pickedDate);
         break;
+      case 'Total histórico':
+        _cargarMedicionesTrabajador(nombreTrabajador, cargarTodo: true);
+
       default:
         // Opción no válida
         break;
@@ -169,38 +178,35 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
         Provider.of<TestResultProvider>(context).nombreTrabajador ??
             "Nombre no definido";
 
-    _cargarMedicionesTrabajador(nombreTrabajador);
+    // Obtener la fecha actual en formato DateTime
+    // Llamar a _cargarMedicionesTrabajador con la fecha actual
+    final DateTime? fechaActual = DateTime.now();
+    _cargarMedicionesTrabajador(nombreTrabajador, diaEspecifico: fechaActual);
   }
 
   Future<void> _cargarMedicionesTrabajador(String nombreTrabajador,
-      {int? anio}) async {
-    if (anio != null) {
-      try {
-        medicionesTrabajador =
-            await obtenerMedicionesTrabajador(nombreTrabajador, anio: anio);
-        List<String> imagenesTrabajadorObtenidas = [];
-// Imprimir las mediciones
-        for (Map<String, dynamic> medicion in medicionesTrabajador) {
-          imagenesTrabajadorObtenidas.add(medicion['imageUrl']);
-          print('Fecha: ${medicion['fecha']}');
-          print('ImageUrl: ${medicion['imageUrl']}');
-          print('Nombre Trabajador: ${medicion['nombreTrabajador']}');
-          print('Rosas:');
-          if (medicion['rosas'] != null) {
-            for (int i = 0; i < medicion['rosas'].length; i++) {
-              print('  $i:');
-              print('    Altura: ${medicion['rosas'][i]['altura']}');
-            }
-          } else {
-            print('    Sin datos de rosas');
-          }
-          print('\n');
-        }
-        setState(() {
-          imagenesTrabajador = imagenesTrabajadorObtenidas;
-        });
-      } catch (error) {}
-    }
+      {int? anio,
+      DateTime? diaEspecifico,
+      DateTime? mesEspecifico,
+      DateTime? fechaInicio,
+      DateTime? fechaFin,
+      bool? cargarTodo}) async {
+    try {
+      medicionesTrabajador = await obtenerMedicionesTrabajador(nombreTrabajador,
+          anio: anio,
+          diaEspecifico: diaEspecifico,
+          mesEspecifico: mesEspecifico,
+          cargarTodo: cargarTodo,
+          fechaInicio: fechaInicio,
+          fechaFin: fechaFin);
+      List<String> imagenesTrabajadorObtenidas = [];
+      for (Map<String, dynamic> medicion in medicionesTrabajador) {
+        imagenesTrabajadorObtenidas.add(medicion['imageUrl']);
+      }
+      setState(() {
+        imagenesTrabajador = imagenesTrabajadorObtenidas;
+      });
+    } catch (error) {}
   }
 
   @override
