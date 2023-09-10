@@ -245,6 +245,10 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
     setState(() {
       textosSuperiores.add(
           "Total de rosas procesadas: $totalRosasProcesadas"); // Agrega un nuevo texto
+      if (totalRosasProcesadas == 0) {
+        textosSuperiores.add(
+            "No se procesaron rosas en esta fecha"); // Add this text if totalRosasProcesadas is 0
+      }
     });
 
     Map<String, int> contadoresRangos = {};
