@@ -494,10 +494,33 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
                       );
 
                       if (confirmarBorrado == true) {
-                        bool imagenBorrada =
-                            await borrarImagenesTrabajador(nombreTrabajador);
-                        if (imagenBorrada) {
-                          _cargarMedicionesTrabajador(nombreTrabajador);
+                        for (String imageUrl in imagenesTrabajador) {
+                          bool imagenBorrada = await borrarImagen(imageUrl);
+                        }
+                        switch (obsion) {
+                          case 'Anual':
+                            _cargarMedicionesTrabajador(nombreTrabajador,
+                                anio: pickedDateYear?.year);
+                            break;
+                          case 'Mensual':
+                            _cargarMedicionesTrabajador(nombreTrabajador,
+                                mesEspecifico: pickedDateMonth);
+                            break;
+                          case 'Personalizado':
+                            _cargarMedicionesTrabajador(nombreTrabajador,
+                                fechaInicio: pickedDatesQuincenal?.start,
+                                fechaFin: pickedDatesQuincenal?.end);
+                            break;
+                          case 'Diario':
+                            _cargarMedicionesTrabajador(nombreTrabajador,
+                                diaEspecifico: pickedDateDaily);
+                            break;
+                          case 'Total histórico':
+                            _cargarMedicionesTrabajador(nombreTrabajador,
+                                cargarTodo: true);
+                            break;
+                          default:
+                            break;
                         }
                       }
                     }
