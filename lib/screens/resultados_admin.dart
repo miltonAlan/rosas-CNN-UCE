@@ -280,6 +280,11 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
       setState(() {
         obsion = 'Diario';
         pickedDateDaily = fechaActual;
+        final dayPart = pickedDateDaily?.day;
+        final monthPart = pickedDateDaily?.month;
+        final monthName = _getMonthName(monthPart);
+        final yearPart = pickedDateDaily?.year.toString();
+        fechaSeleccionada = "\t\t\t\t\t ${dayPart} de ${monthName}, $yearPart";
       });
       cargarMedicionesParaTrabajadores();
     });
