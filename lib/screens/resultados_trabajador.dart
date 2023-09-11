@@ -40,6 +40,7 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
   DateTime? endDate;
   DateTimeRange? pickedDatesQuincenal;
   String obsion = "";
+  String fechaSeleccionada = "";
 
   Future<DateTime?> _showYearPicker(BuildContext context) async {
     return showDialog<DateTime>(
@@ -77,6 +78,12 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
         });
         // Permite seleccionar solo el año
         pickedDateYear = await _showYearPicker(context);
+        setState(() {
+          final yearPart =
+              pickedDateYear?.year.toString(); // Obtener el año como una cadena
+
+          fechaSeleccionada = "\t\t\t\t\tAño: ${yearPart!}";
+        });
         _cargarMedicionesTrabajador(nombreTrabajador,
             anio: pickedDateYear?.year);
         break;
@@ -89,6 +96,13 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
           context: context,
           initialDate: DateTime.now(),
         );
+        setState(() {
+          final monthPart = pickedDateMonth?.month;
+          final monthName = _getMonthName(monthPart);
+          final yearPart = pickedDateMonth?.year.toString();
+
+          fechaSeleccionada = "\t\t\t\t\t ${monthName}, $yearPart";
+        });
         _cargarMedicionesTrabajador(nombreTrabajador,
             mesEspecifico: pickedDateMonth);
         break;
@@ -112,6 +126,20 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
         if (pickedDatesQuincenal != null) {
           startDate = pickedDatesQuincenal?.start;
           endDate = pickedDatesQuincenal?.end;
+          setState(() {
+            final startDayPart = startDate?.day;
+            final startMonthPart = startDate?.month;
+            final startMonthName = _getMonthName(startMonthPart);
+            final startYearPart = startDate?.year.toString();
+
+            final endDayPart = endDate?.day;
+            final endMonthPart = endDate?.month;
+            final endMonthName = _getMonthName(endMonthPart);
+            final endYearPart = endDate?.year.toString();
+
+            fechaSeleccionada =
+                "\t\t\t\t\t${startDayPart},${startMonthName}, $startYearPart \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\thasta \n\t\t\t\t\t${endDayPart},${endMonthName}, $endYearPart";
+          });
           _cargarMedicionesTrabajador(nombreTrabajador,
               fechaInicio: startDate, fechaFin: endDate);
         }
@@ -127,12 +155,22 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
           firstDate: DateTime(2000),
           lastDate: DateTime(2101),
         );
+        setState(() {
+          final dayPart = pickedDateDaily?.day;
+          final monthPart = pickedDateDaily?.month;
+          final monthName = _getMonthName(monthPart);
+          final yearPart = pickedDateDaily?.year.toString();
+
+          fechaSeleccionada =
+              "\t\t\t\t\t ${dayPart} de ${monthName}, $yearPart";
+        });
         _cargarMedicionesTrabajador(nombreTrabajador,
             diaEspecifico: pickedDateDaily);
         break;
       case 'Total histórico':
         setState(() {
           obsion = 'Total histórico';
+          fechaSeleccionada = "\t\t\t\t\t\t\tTodas las fechas";
         });
         _cargarMedicionesTrabajador(nombreTrabajador, cargarTodo: true);
         break;
@@ -200,6 +238,11 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
     setState(() {
       obsion = 'Diario';
       pickedDateDaily = fechaActual;
+      final dayPart = pickedDateDaily?.day;
+      final monthPart = pickedDateDaily?.month;
+      final monthName = _getMonthName(monthPart);
+      final yearPart = pickedDateDaily?.year.toString();
+      fechaSeleccionada = "\t\t\t\t\t ${dayPart} de ${monthName}, $yearPart";
     });
   }
 
@@ -226,6 +269,29 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
         imagenesTrabajador = imagenesTrabajadorObtenidas;
       });
     } catch (error) {}
+  }
+
+  String _getMonthName(int? monthNumber) {
+    final months = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre'
+    ];
+
+    if (monthNumber != null && monthNumber >= 1 && monthNumber <= 12) {
+      return months[monthNumber - 1]; // Resta 1 porque el índice comienza en 0
+    } else {
+      return 'Mes Inválido';
+    }
   }
 
   @override
@@ -326,6 +392,22 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
                       child: Text(value),
                     );
                   }).toList(),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  'Fecha Seleccionada:',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                  ),
+                ),
+                Text(
+                  '$fechaSeleccionada',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                  ),
                 ),
               ],
             ),
