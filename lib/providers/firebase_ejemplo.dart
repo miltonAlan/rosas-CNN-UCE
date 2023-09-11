@@ -165,32 +165,53 @@ Future<List<Map<String, dynamic>>> obtenerMedicionesTrabajador(
   }
 }
 
-Future<List<Map<String, dynamic>>> obtenerMedicionesTrabajadores() async {
+Future<List<Map<String, dynamic>>> obtenerMedicionesTrabajadores(
+    {DateTime? fechaInicio,
+    DateTime? fechaFin,
+    DateTime? diaEspecifico,
+    DateTime? mesEspecifico,
+    int? anio,
+    bool? cargarTodo}) async {
   List<Map<String, dynamic>> mediciones = [];
+  print("diaEspecifico $diaEspecifico");
   try {
     final QuerySnapshot trabajadorData = await db.collection('imagenes').get();
 
+    final customFormat = DateFormat('yyyy_MM_dd');
+
     for (QueryDocumentSnapshot doc in trabajadorData.docs) {
-      mediciones.add(doc.data() as Map<String, dynamic>);
+      String fechaMedicion = doc['fecha'];
+      DateTime fecha = customFormat.parse(fechaMedicion);
+      if (cargarTodo != null && cargarTodo == true) {
+        mediciones.add(doc.data() as Map<String, dynamic>);
+      }
+      if (anio != null && fecha.year == anio) {
+        mediciones.add(doc.data() as Map<String, dynamic>);
+      }
+      if (diaEspecifico != null) {
+        if (fecha.year == diaEspecifico.year &&
+            fecha.month == diaEspecifico.month &&
+            fecha.day == diaEspecifico.day) {
+          mediciones.add(doc.data() as Map<String, dynamic>);
+        }
+      }
+      if (mesEspecifico != null) {
+        if (fecha.year == mesEspecifico.year &&
+            fecha.month == mesEspecifico.month) {
+          mediciones.add(doc.data() as Map<String, dynamic>);
+        }
+      }
+      if (fechaInicio != null && fechaFin != null) {
+        if (fechaInicio.year <= fecha.year &&
+            fecha.year <= fechaFin.year &&
+            fechaInicio.month <= fecha.month &&
+            fecha.month <= fechaFin.month &&
+            fechaInicio.day <= fecha.day &&
+            fecha.day <= fechaFin.day) {
+          mediciones.add(doc.data() as Map<String, dynamic>);
+        }
+      }
     }
-
-    // // Imprimir las mediciones
-    // for (Map<String, dynamic> medicion in mediciones) {
-    //   print('Fecha: ${medicion['fecha']}');
-    //   print('ImageUrl: ${medicion['imageUrl']}');
-    //   print('Nombre Trabajador: ${medicion['nombreTrabajador']}');
-    //   print('Rosas:');
-    //   if (medicion['rosas'] != null) {
-    //     for (int i = 0; i < medicion['rosas'].length; i++) {
-    //       print('  $i:');
-    //       print('    Altura: ${medicion['rosas'][i]['altura']}');
-    //     }
-    //   } else {
-    //     print('    Sin datos de rosas');
-    //   }
-    //   print('\n');
-    // }
-
     return mediciones;
   } catch (e) {
     print('Error al obtener mediciones del trabajador: $e');

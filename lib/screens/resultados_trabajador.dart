@@ -303,21 +303,31 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
               ),
             ),
             // DropdownButton
-            DropdownButton<String>(
-              value: dropdownValueDate,
-              onChanged: (String? newValue) {
-                setState(() {
-                  dropdownValueDate = newValue!;
-                  _selectDate(context, dropdownValueDate, nombreTrabajador);
-                });
-              },
-              items: dropdownOptionsDate
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
+            Row(
+              children: [
+                Text(
+                  'Escoja una fecha: \t\t\t\t',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                  ),
+                ),
+                DropdownButton<String>(
+                  value: dropdownValueDate,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      dropdownValueDate = newValue!;
+                      _selectDate(context, dropdownValueDate, nombreTrabajador);
+                    });
+                  },
+                  items: dropdownOptionsDate
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
             DataTable(
               showCheckboxColumn: true, // Esto oculta las casillas de selección

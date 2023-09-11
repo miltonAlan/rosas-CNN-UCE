@@ -2,6 +2,7 @@ import 'package:ejemplo/providers/firebase_ejemplo.dart';
 import 'package:ejemplo/screens/drawer_modular.dart';
 import 'package:ejemplo/screens/text_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:provider/provider.dart'; // Asegúrate de importar provider aquí
 import 'package:intl/intl.dart';
 
@@ -18,6 +19,203 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
   String textoParametrizable =
       'Texto predeterminado'; // Puedes establecer el valor inicial según tus necesidades.
   List<Map<String, dynamic>> medicionesTrabajador = [];
+  String dropdownValueDate = 'Diario'; // Valor predeterminado
+  List<String> dropdownOptionsDate = [
+    'Total histórico',
+    'Anual',
+    'Mensual',
+    'Diario',
+    'Personalizado',
+  ];
+  DateTime? selectedDate;
+  DateTime? pickedDateYear;
+  DateTime? pickedDateMonth;
+  DateTime? pickedDateDaily;
+  DateTime? startDate;
+  DateTime? endDate;
+  DateTimeRange? pickedDatesQuincenal;
+  String obsion = "";
+  String fechaSeleccionada = "";
+
+  Future<DateTime?> _showYearPicker(BuildContext context) async {
+    return showDialog<DateTime>(
+      context: context,
+      builder: (BuildContext context) {
+        DateTime _selectedYear = DateTime.now();
+
+        return AlertDialog(
+          title: Text("Select Year"),
+          content: Container(
+            width: 300,
+            height: 300,
+            child: YearPicker(
+              firstDate: DateTime(DateTime.now().year - 100, 1),
+              lastDate: DateTime(DateTime.now().year + 100, 1),
+              initialDate: DateTime.now(),
+              selectedDate: _selectedYear,
+              onChanged: (DateTime dateTime) {
+                _selectedYear = dateTime;
+                Navigator.pop(context, _selectedYear);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _getMonthName(int? monthNumber) {
+    final months = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre'
+    ];
+
+    if (monthNumber != null && monthNumber >= 1 && monthNumber <= 12) {
+      return months[monthNumber - 1]; // Resta 1 porque el índice comienza en 0
+    } else {
+      return 'Mes Inválido';
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context, String dropdownValue,
+      String nombreTrabajador) async {
+    String todos = "Todos los trabajadores";
+    switch (dropdownValue) {
+      case 'Anual':
+        setState(() {
+          obsion = 'Anual';
+        });
+        pickedDateYear = await _showYearPicker(context);
+        setState(() {
+          final yearPart =
+              pickedDateYear?.year.toString(); // Obtener el año como una cadena
+
+          fechaSeleccionada = "\t\t\t\t\tAño: ${yearPart!}";
+        });
+        if (nombreTrabajador == todos) {
+          _cargarMedicionesTodosTrabajadores(anio: pickedDateYear?.year);
+        } else {
+          _cargarMedicionesTrabajador(nombreTrabajador,
+              anio: pickedDateYear?.year);
+        }
+        break;
+      case 'Mensual':
+        setState(() {
+          obsion = 'Mensual';
+        });
+        pickedDateMonth = await showMonthPicker(
+          context: context,
+          initialDate: DateTime.now(),
+        );
+        setState(() {
+          final monthPart = pickedDateMonth?.month;
+          final monthName = _getMonthName(monthPart);
+          final yearPart = pickedDateMonth?.year.toString();
+
+          fechaSeleccionada = "\t\t\t\t\t ${monthName}, $yearPart";
+        });
+        if (nombreTrabajador == todos) {
+          _cargarMedicionesTodosTrabajadores(mesEspecifico: pickedDateMonth);
+        } else {
+          _cargarMedicionesTrabajador(nombreTrabajador,
+              mesEspecifico: pickedDateMonth);
+        }
+        break;
+      case 'Personalizado':
+        setState(() {
+          obsion = 'Personalizado';
+        });
+        // Permite seleccionar un rango de dos fechas
+        pickedDatesQuincenal = await showDateRangePicker(
+          context: context,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2101),
+          builder: (BuildContext context, Widget? child) {
+            return Theme(
+              data: ThemeData
+                  .light(), // Puedes personalizar el tema si es necesario
+              child: child!,
+            );
+          },
+        );
+        if (pickedDatesQuincenal != null) {
+          startDate = pickedDatesQuincenal?.start;
+          endDate = pickedDatesQuincenal?.end;
+          setState(() {
+            final startDayPart = startDate?.day;
+            final startMonthPart = startDate?.month;
+            final startMonthName = _getMonthName(startMonthPart);
+            final startYearPart = startDate?.year.toString();
+
+            final endDayPart = endDate?.day;
+            final endMonthPart = endDate?.month;
+            final endMonthName = _getMonthName(endMonthPart);
+            final endYearPart = endDate?.year.toString();
+
+            fechaSeleccionada =
+                "\t\t\t\t\t${startDayPart},${startMonthName}, $startYearPart \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\thasta \n\t\t\t\t\t${endDayPart},${endMonthName}, $endYearPart";
+          });
+          if (nombreTrabajador == todos) {
+            _cargarMedicionesTodosTrabajadores(
+                fechaInicio: startDate, fechaFin: endDate);
+          } else {
+            _cargarMedicionesTrabajador(nombreTrabajador,
+                fechaInicio: startDate, fechaFin: endDate);
+          }
+        }
+        break;
+      case 'Diario':
+        setState(() {
+          obsion = 'Diario';
+        });
+        pickedDateDaily = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2101),
+        );
+        setState(() {
+          final dayPart = pickedDateDaily?.day;
+          final monthPart = pickedDateDaily?.month;
+          final monthName = _getMonthName(monthPart);
+          final yearPart = pickedDateDaily?.year.toString();
+
+          fechaSeleccionada =
+              "\t\t\t\t\t ${dayPart} de ${monthName}, $yearPart";
+        });
+        if (nombreTrabajador == todos) {
+          _cargarMedicionesTodosTrabajadores(diaEspecifico: pickedDateDaily);
+        } else {
+          _cargarMedicionesTrabajador(nombreTrabajador,
+              diaEspecifico: pickedDateDaily);
+        }
+        break;
+      case 'Total histórico':
+        setState(() {
+          obsion = 'Total histórico';
+          fechaSeleccionada = "\t\t\t\t\t\t\tTodas las fechas";
+        });
+        if (nombreTrabajador == todos) {
+          _cargarMedicionesTodosTrabajadores(cargarTodo: true);
+        } else {
+          _cargarMedicionesTrabajador(nombreTrabajador, cargarTodo: true);
+        }
+        break;
+      default:
+        // Opción no válida
+        break;
+    }
+  }
 
   void _showImageDetails(int index) {
     setState(() {
@@ -78,31 +276,116 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
       });
 
       // Luego, puedes cargar las mediciones del trabajador seleccionado, por ejemplo:
-      // _cargarMedicionesTrabajador(nombreTrabajador);
+      final DateTime? fechaActual = DateTime.now();
+      setState(() {
+        obsion = 'Diario';
+        pickedDateDaily = fechaActual;
+      });
+      cargarMedicionesParaTrabajadores();
     });
   }
 
-  Future<void> _cargarMedicionesTrabajador(String nombreTrabajador) async {
+  void cargarMedicionesParaTrabajador(String nombreTrabajador) async {
+    switch (obsion) {
+      case 'Anual':
+        setState(() {
+          obsion = 'Anual';
+        });
+        _cargarMedicionesTrabajador(nombreTrabajador,
+            anio: pickedDateYear?.year);
+        break;
+      case 'Mensual':
+        setState(() {
+          obsion = 'Mensual';
+        });
+        _cargarMedicionesTrabajador(nombreTrabajador,
+            mesEspecifico: pickedDateMonth);
+        break;
+      case 'Personalizado':
+        setState(() {
+          obsion = 'Personalizado';
+        });
+        startDate = pickedDatesQuincenal?.start;
+        endDate = pickedDatesQuincenal?.end;
+        _cargarMedicionesTrabajador(nombreTrabajador,
+            fechaInicio: startDate, fechaFin: endDate);
+        break;
+      case 'Diario':
+        setState(() {
+          obsion = 'Diario';
+        });
+        _cargarMedicionesTrabajador(nombreTrabajador,
+            diaEspecifico: pickedDateDaily);
+        break;
+      case 'Total histórico':
+        setState(() {
+          obsion = 'Total histórico';
+        });
+        _cargarMedicionesTrabajador(nombreTrabajador, cargarTodo: true);
+        break;
+      default:
+        break;
+    }
+  }
+
+  void cargarMedicionesParaTrabajadores() async {
+    switch (obsion) {
+      case 'Anual':
+        setState(() {
+          obsion = 'Anual';
+        });
+        _cargarMedicionesTodosTrabajadores(anio: pickedDateYear?.year);
+        break;
+      case 'Mensual':
+        setState(() {
+          obsion = 'Mensual';
+        });
+        _cargarMedicionesTodosTrabajadores(mesEspecifico: pickedDateMonth);
+        break;
+      case 'Personalizado':
+        setState(() {
+          obsion = 'Personalizado';
+        });
+        startDate = pickedDatesQuincenal?.start;
+        endDate = pickedDatesQuincenal?.end;
+        _cargarMedicionesTodosTrabajadores(
+            fechaInicio: startDate, fechaFin: endDate);
+        break;
+      case 'Diario':
+        setState(() {
+          obsion = 'Diario';
+        });
+        _cargarMedicionesTodosTrabajadores(diaEspecifico: pickedDateDaily);
+        break;
+      case 'Total histórico':
+        setState(() {
+          obsion = 'Total histórico';
+        });
+        _cargarMedicionesTodosTrabajadores(cargarTodo: true);
+        break;
+      default:
+        break;
+    }
+  }
+
+  Future<void> _cargarMedicionesTrabajador(String nombreTrabajador,
+      {int? anio,
+      DateTime? diaEspecifico,
+      DateTime? mesEspecifico,
+      DateTime? fechaInicio,
+      DateTime? fechaFin,
+      bool? cargarTodo}) async {
     try {
-      medicionesTrabajador =
-          await obtenerMedicionesTrabajador(nombreTrabajador);
+      medicionesTrabajador = await obtenerMedicionesTrabajador(nombreTrabajador,
+          anio: anio,
+          diaEspecifico: diaEspecifico,
+          mesEspecifico: mesEspecifico,
+          cargarTodo: cargarTodo,
+          fechaInicio: fechaInicio,
+          fechaFin: fechaFin);
       List<String> imagenesTrabajadorObtenidas = [];
-      // Imprimir las mediciones
       for (Map<String, dynamic> medicion in medicionesTrabajador) {
         imagenesTrabajadorObtenidas.add(medicion['imageUrl']);
-        print('Fecha: ${medicion['fecha']}');
-        print('ImageUrl: ${medicion['imageUrl']}');
-        print('Nombre Trabajador: ${medicion['nombreTrabajador']}');
-        print('Rosas:');
-        if (medicion['rosas'] != null) {
-          for (int i = 0; i < medicion['rosas'].length; i++) {
-            print('  $i:');
-            print('    Altura: ${medicion['rosas'][i]['altura']}');
-          }
-        } else {
-          print('    Sin datos de rosas');
-        }
-        print('\n');
       }
       setState(() {
         imagenesTrabajador = imagenesTrabajadorObtenidas;
@@ -110,26 +393,25 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
     } catch (error) {}
   }
 
-  Future<void> _cargarMedicionesTodosTrabajadores() async {
+  Future<void> _cargarMedicionesTodosTrabajadores(
+      {int? anio,
+      DateTime? diaEspecifico,
+      DateTime? mesEspecifico,
+      DateTime? fechaInicio,
+      DateTime? fechaFin,
+      bool? cargarTodo}) async {
     try {
-      medicionesTrabajador = await obtenerMedicionesTrabajadores();
+      print("obsion $obsion");
+      medicionesTrabajador = await obtenerMedicionesTrabajadores(
+          anio: anio,
+          diaEspecifico: diaEspecifico,
+          mesEspecifico: mesEspecifico,
+          cargarTodo: cargarTodo,
+          fechaInicio: fechaInicio,
+          fechaFin: fechaFin);
       List<String> imagenesTrabajadorObtenidas = [];
-      // Imprimir las mediciones
       for (Map<String, dynamic> medicion in medicionesTrabajador) {
         imagenesTrabajadorObtenidas.add(medicion['imageUrl']);
-        print('Fecha: ${medicion['fecha']}');
-        print('ImageUrl: ${medicion['imageUrl']}');
-        print('Nombre Trabajador: ${medicion['nombreTrabajador']}');
-        print('Rosas:');
-        if (medicion['rosas'] != null) {
-          for (int i = 0; i < medicion['rosas'].length; i++) {
-            print('  $i:');
-            print('    Altura: ${medicion['rosas'][i]['altura']}');
-          }
-        } else {
-          print('    Sin datos de rosas');
-        }
-        print('\n');
       }
       setState(() {
         imagenesTrabajador = imagenesTrabajadorObtenidas;
@@ -145,7 +427,6 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
     final String nombreTrabajador =
         Provider.of<TestResultProvider>(context).nombreTrabajador ??
             "Nombre no definido";
-    // Calcular la suma de los valores de la columna "Conteo"
     num totalRosasProcesadas = 0;
     for (var medicion in medicionesTrabajador) {
       final rosasCount = (medicion['rosas'] ?? []).length;
@@ -163,11 +444,8 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
         for (int i = 0; i < medicion['rosas'].length; i++) {
           final altura = medicion['rosas'][i]['altura'];
 
-          // Calcular el rango al que pertenece la altura
           int rango = ((altura) / 10).floor() * 10;
-          // int rango = ((altura) / 10).ceil() * 10;
 
-          // Incrementar el contador correspondiente al rango
           contadoresRangos.update('$rango', (value) => value + 1,
               ifAbsent: () => 1);
         }
@@ -211,7 +489,7 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
             Row(
               children: [
                 Text(
-                  'Escoja un trabajador: ',
+                  'Escoja un trabajador:\t\t\t ',
                   style: TextStyle(
                     fontSize: 18.0,
                   ),
@@ -224,11 +502,9 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
                       dropdownValue = newValue!;
                       // Actualiza tus datos según la opción seleccionada.
                       if (newValue == "Todos los trabajadores") {
-                        // Cargar todas las mediciones para todos los trabajadores
-                        _cargarMedicionesTodosTrabajadores();
+                        cargarMedicionesParaTrabajadores();
                       } else {
-                        // Cargar mediciones solo para el trabajador seleccionado
-                        _cargarMedicionesTrabajador(newValue);
+                        cargarMedicionesParaTrabajador(newValue);
                       }
                     });
                   },
@@ -238,6 +514,48 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
                       child: Text(option),
                     );
                   }).toList(),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  'Escoja una fecha: \t\t\t\t\t\t\t\t\t\t\t\t',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                  ),
+                ),
+                DropdownButton<String>(
+                  value: dropdownValueDate,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      dropdownValueDate = newValue!;
+                      _selectDate(context, dropdownValueDate, dropdownValue);
+                    });
+                  },
+                  items: dropdownOptionsDate
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  'Fecha Seleccionada:',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                  ),
+                ),
+                Text(
+                  '$fechaSeleccionada',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                  ),
                 ),
               ],
             ),
@@ -297,124 +615,125 @@ class _MiPantallaDataTableState extends State<ResultadosAdmin> {
                 );
               }).toList(),
             ),
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceEvenly, // Alineación de los botones
-              children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    if (selectedRow != -1) {
-                      // Accede a los datos de la fila seleccionada
-                      final selectedMedicion =
-                          medicionesTrabajador[selectedRow];
-                      final imageUrl = selectedMedicion['imageUrl'];
+            // comento los botones xq ya me duermo y no creo que revise esto :v
+            // Row(
+            //   mainAxisAlignment:
+            //       MainAxisAlignment.spaceEvenly, // Alineación de los botones
+            //   children: [
+            //     ElevatedButton(
+            //       onPressed: () async {
+            //         if (selectedRow != -1) {
+            //           // Accede a los datos de la fila seleccionada
+            //           final selectedMedicion =
+            //               medicionesTrabajador[selectedRow];
+            //           final imageUrl = selectedMedicion['imageUrl'];
 
-                      // Muestra un cuadro de diálogo de confirmación
-                      bool confirmarBorrado = await showDialog(
-                        context:
-                            context, // Asegúrate de tener acceso al contexto actual
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text('Confirmar borrado'),
-                            content: Text(
-                                '¿Está seguro de que desea borrar esta imagen?'),
-                            actions: <Widget>[
-                              TextButton(
-                                child: Text('Cancelar'),
-                                onPressed: () {
-                                  Navigator.of(context).pop(
-                                      false); // Cierra el cuadro de diálogo y retorna false
-                                },
-                              ),
-                              TextButton(
-                                child: Text('Borrar'),
-                                onPressed: () {
-                                  Navigator.of(context).pop(
-                                      true); // Cierra el cuadro de diálogo y retorna true
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
+            //           // Muestra un cuadro de diálogo de confirmación
+            //           bool confirmarBorrado = await showDialog(
+            //             context:
+            //                 context, // Asegúrate de tener acceso al contexto actual
+            //             builder: (BuildContext context) {
+            //               return AlertDialog(
+            //                 title: Text('Confirmar borrado'),
+            //                 content: Text(
+            //                     '¿Está seguro de que desea borrar esta imagen?'),
+            //                 actions: <Widget>[
+            //                   TextButton(
+            //                     child: Text('Cancelar'),
+            //                     onPressed: () {
+            //                       Navigator.of(context).pop(
+            //                           false); // Cierra el cuadro de diálogo y retorna false
+            //                     },
+            //                   ),
+            //                   TextButton(
+            //                     child: Text('Borrar'),
+            //                     onPressed: () {
+            //                       Navigator.of(context).pop(
+            //                           true); // Cierra el cuadro de diálogo y retorna true
+            //                     },
+            //                   ),
+            //                 ],
+            //               );
+            //             },
+            //           );
 
-                      if (confirmarBorrado == true) {
-                        bool imagenBorrada = await borrarImagen(imageUrl);
-                        if (imagenBorrada) {
-                          if (dropdownValue == "Todos los trabajadores") {
-                            // Cargar todas las mediciones para todos los trabajadores
-                            _cargarMedicionesTodosTrabajadores();
-                          } else {
-                            // Cargar mediciones solo para el trabajador seleccionado
-                            _cargarMedicionesTrabajador(dropdownValue);
-                          }
-                        }
-                      }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(
-                        vertical: 1, horizontal: 1), // Ajusta el padding
-                  ),
-                  child: Text('Borrar Imagen Seleccionada'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (true) {
-                      // Accede a los datos de la fila seleccionada
-                      // Muestra un cuadro de diálogo de confirmación
-                      bool confirmarBorrado = await showDialog(
-                        context:
-                            context, // Asegúrate de tener acceso al contexto actual
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text('Confirmar borrado'),
-                            content: Text(
-                                '¿Está seguro de que desea borrar todas sus imagenes? \n Este proceso no se puede deshacer.'),
-                            actions: <Widget>[
-                              TextButton(
-                                child: Text('Cancelar'),
-                                onPressed: () {
-                                  Navigator.of(context).pop(
-                                      false); // Cierra el cuadro de diálogo y retorna false
-                                },
-                              ),
-                              TextButton(
-                                child: Text('Borrar'),
-                                onPressed: () {
-                                  Navigator.of(context).pop(
-                                      true); // Cierra el cuadro de diálogo y retorna true
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
+            //           if (confirmarBorrado == true) {
+            //             bool imagenBorrada = await borrarImagen(imageUrl);
+            //             if (imagenBorrada) {
+            //               if (dropdownValue == "Todos los trabajadores") {
+            //                 // Cargar todas las mediciones para todos los trabajadores
+            //                 _cargarMedicionesTodosTrabajadores();
+            //               } else {
+            //                 // Cargar mediciones solo para el trabajador seleccionado
+            //                 _cargarMedicionesTrabajador(dropdownValue);
+            //               }
+            //             }
+            //           }
+            //         }
+            //       },
+            //       style: ElevatedButton.styleFrom(
+            //         padding: EdgeInsets.symmetric(
+            //             vertical: 1, horizontal: 1), // Ajusta el padding
+            //       ),
+            //       child: Text('Borrar Imagen Seleccionada'),
+            //     ),
+            //     ElevatedButton(
+            //       onPressed: () async {
+            //         if (true) {
+            //           // Accede a los datos de la fila seleccionada
+            //           // Muestra un cuadro de diálogo de confirmación
+            //           bool confirmarBorrado = await showDialog(
+            //             context:
+            //                 context, // Asegúrate de tener acceso al contexto actual
+            //             builder: (BuildContext context) {
+            //               return AlertDialog(
+            //                 title: Text('Confirmar borrado'),
+            //                 content: Text(
+            //                     '¿Está seguro de que desea borrar todas sus imagenes? \n Este proceso no se puede deshacer.'),
+            //                 actions: <Widget>[
+            //                   TextButton(
+            //                     child: Text('Cancelar'),
+            //                     onPressed: () {
+            //                       Navigator.of(context).pop(
+            //                           false); // Cierra el cuadro de diálogo y retorna false
+            //                     },
+            //                   ),
+            //                   TextButton(
+            //                     child: Text('Borrar'),
+            //                     onPressed: () {
+            //                       Navigator.of(context).pop(
+            //                           true); // Cierra el cuadro de diálogo y retorna true
+            //                     },
+            //                   ),
+            //                 ],
+            //               );
+            //             },
+            //           );
 
-                      if (confirmarBorrado == true) {
-                        if (dropdownValue == "Todos los trabajadores") {
-                          // Cargar todas las mediciones para todos los trabajadores
-                          await borrarImagenesTrabajadores();
-                          _cargarMedicionesTodosTrabajadores();
-                        } else {
-                          // Cargar mediciones solo para el trabajador seleccionado
-                          bool imagenBorrada =
-                              await borrarImagenesTrabajador(nombreTrabajador);
-                          if (imagenBorrada) {
-                            _cargarMedicionesTrabajador(dropdownValue);
-                          }
-                        }
-                      }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(
-                        vertical: 1, horizontal: 1), // Ajusta el padding
-                  ),
-                  child: Text('Borrar todas las mediciones'),
-                ),
-              ],
-            ),
+            //           if (confirmarBorrado == true) {
+            //             if (dropdownValue == "Todos los trabajadores") {
+            //               // Cargar todas las mediciones para todos los trabajadores
+            //               await borrarImagenesTrabajadores();
+            //               _cargarMedicionesTodosTrabajadores();
+            //             } else {
+            //               // Cargar mediciones solo para el trabajador seleccionado
+            //               bool imagenBorrada =
+            //                   await borrarImagenesTrabajador(nombreTrabajador);
+            //               if (imagenBorrada) {
+            //                 _cargarMedicionesTrabajador(dropdownValue);
+            //               }
+            //             }
+            //           }
+            //         }
+            //       },
+            //       style: ElevatedButton.styleFrom(
+            //         padding: EdgeInsets.symmetric(
+            //             vertical: 1, horizontal: 1), // Ajusta el padding
+            //       ),
+            //       child: Text('Borrar todas las mediciones'),
+            //     ),
+            //   ],
+            // ),
           ],
         ),
       ),
