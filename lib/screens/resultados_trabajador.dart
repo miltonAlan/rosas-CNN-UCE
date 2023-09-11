@@ -2,6 +2,7 @@ import 'package:ejemplo/providers/firebase_ejemplo.dart';
 import 'package:ejemplo/screens/drawer_modular.dart';
 import 'package:ejemplo/screens/text_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:provider/provider.dart'; // Asegúrate de importar provider aquí
 import 'package:intl/intl.dart';
 
@@ -23,6 +24,123 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
   String textoParametrizable =
       'Texto predeterminado'; // Puedes establecer el valor inicial según tus necesidades.
   List<Map<String, dynamic>> medicionesTrabajador = [];
+  String dropdownValueDate = 'Diario'; // Valor predeterminado
+  List<String> dropdownOptionsDate = [
+    'Total histórico',
+    'Anual',
+    'Mensual',
+    'Diario',
+    'Personalizado',
+  ];
+  DateTime? selectedDate;
+  DateTime? pickedDateYear;
+  DateTime? pickedDateMonth;
+  DateTime? pickedDateDaily;
+  DateTime? startDate;
+  DateTime? endDate;
+  DateTimeRange? pickedDatesQuincenal;
+  String obsion = "";
+
+  Future<DateTime?> _showYearPicker(BuildContext context) async {
+    return showDialog<DateTime>(
+      context: context,
+      builder: (BuildContext context) {
+        DateTime _selectedYear = DateTime.now();
+
+        return AlertDialog(
+          title: Text("Select Year"),
+          content: Container(
+            width: 300,
+            height: 300,
+            child: YearPicker(
+              firstDate: DateTime(DateTime.now().year - 100, 1),
+              lastDate: DateTime(DateTime.now().year + 100, 1),
+              initialDate: DateTime.now(),
+              selectedDate: _selectedYear,
+              onChanged: (DateTime dateTime) {
+                _selectedYear = dateTime;
+                Navigator.pop(context, _selectedYear);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _selectDate(BuildContext context, String dropdownValue,
+      String nombreTrabajador) async {
+    switch (dropdownValue) {
+      case 'Anual':
+        setState(() {
+          obsion = 'Anual';
+        });
+        // Permite seleccionar solo el año
+        pickedDateYear = await _showYearPicker(context);
+        _cargarMedicionesTrabajador(nombreTrabajador,
+            anio: pickedDateYear?.year);
+        break;
+      case 'Mensual':
+        setState(() {
+          obsion = 'Mensual';
+        });
+        // Permite seleccionar un mes
+        pickedDateMonth = await showMonthPicker(
+          context: context,
+          initialDate: DateTime.now(),
+        );
+        _cargarMedicionesTrabajador(nombreTrabajador,
+            mesEspecifico: pickedDateMonth);
+        break;
+      case 'Personalizado':
+        setState(() {
+          obsion = 'Personalizado';
+        });
+        // Permite seleccionar un rango de dos fechas
+        pickedDatesQuincenal = await showDateRangePicker(
+          context: context,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2101),
+          builder: (BuildContext context, Widget? child) {
+            return Theme(
+              data: ThemeData
+                  .light(), // Puedes personalizar el tema si es necesario
+              child: child!,
+            );
+          },
+        );
+        if (pickedDatesQuincenal != null) {
+          startDate = pickedDatesQuincenal?.start;
+          endDate = pickedDatesQuincenal?.end;
+          _cargarMedicionesTrabajador(nombreTrabajador,
+              fechaInicio: startDate, fechaFin: endDate);
+        }
+        break;
+      case 'Diario':
+        setState(() {
+          obsion = 'Diario';
+        });
+        // Permite seleccionar un día
+        pickedDateDaily = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2101),
+        );
+        _cargarMedicionesTrabajador(nombreTrabajador,
+            diaEspecifico: pickedDateDaily);
+        break;
+      case 'Total histórico':
+        setState(() {
+          obsion = 'Total histórico';
+        });
+        _cargarMedicionesTrabajador(nombreTrabajador, cargarTodo: true);
+        break;
+      default:
+        // Opción no válida
+        break;
+    }
+  }
 
   void _showImageDetails(int index) {
     setState(() {
@@ -75,30 +193,34 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
         Provider.of<TestResultProvider>(context).nombreTrabajador ??
             "Nombre no definido";
 
-    _cargarMedicionesTrabajador(nombreTrabajador);
+    // Obtener la fecha actual en formato DateTime
+    // Llamar a _cargarMedicionesTrabajador con la fecha actual
+    final DateTime? fechaActual = DateTime.now();
+    _cargarMedicionesTrabajador(nombreTrabajador, diaEspecifico: fechaActual);
+    setState(() {
+      obsion = 'Diario';
+      pickedDateDaily = fechaActual;
+    });
   }
 
-  Future<void> _cargarMedicionesTrabajador(String nombreTrabajador) async {
+  Future<void> _cargarMedicionesTrabajador(String nombreTrabajador,
+      {int? anio,
+      DateTime? diaEspecifico,
+      DateTime? mesEspecifico,
+      DateTime? fechaInicio,
+      DateTime? fechaFin,
+      bool? cargarTodo}) async {
     try {
-      medicionesTrabajador =
-          await obtenerMedicionesTrabajador(nombreTrabajador);
+      medicionesTrabajador = await obtenerMedicionesTrabajador(nombreTrabajador,
+          anio: anio,
+          diaEspecifico: diaEspecifico,
+          mesEspecifico: mesEspecifico,
+          cargarTodo: cargarTodo,
+          fechaInicio: fechaInicio,
+          fechaFin: fechaFin);
       List<String> imagenesTrabajadorObtenidas = [];
-      // Imprimir las mediciones
       for (Map<String, dynamic> medicion in medicionesTrabajador) {
         imagenesTrabajadorObtenidas.add(medicion['imageUrl']);
-        print('Fecha: ${medicion['fecha']}');
-        print('ImageUrl: ${medicion['imageUrl']}');
-        print('Nombre Trabajador: ${medicion['nombreTrabajador']}');
-        print('Rosas:');
-        if (medicion['rosas'] != null) {
-          for (int i = 0; i < medicion['rosas'].length; i++) {
-            print('  $i:');
-            print('    Altura: ${medicion['rosas'][i]['altura']}');
-          }
-        } else {
-          print('    Sin datos de rosas');
-        }
-        print('\n');
       }
       setState(() {
         imagenesTrabajador = imagenesTrabajadorObtenidas;
@@ -123,6 +245,10 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
     setState(() {
       textosSuperiores.add(
           "Total de rosas procesadas: $totalRosasProcesadas"); // Agrega un nuevo texto
+      if (totalRosasProcesadas == 0) {
+        textosSuperiores.add(
+            "No se procesaron rosas en esta fecha"); // Add this text if totalRosasProcesadas is 0
+      }
     });
 
     Map<String, int> contadoresRangos = {};
@@ -177,6 +303,32 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
               ),
             ),
             // DropdownButton
+            Row(
+              children: [
+                Text(
+                  'Escoja una fecha: \t\t\t\t',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                  ),
+                ),
+                DropdownButton<String>(
+                  value: dropdownValueDate,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      dropdownValueDate = newValue!;
+                      _selectDate(context, dropdownValueDate, nombreTrabajador);
+                    });
+                  },
+                  items: dropdownOptionsDate
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
             DataTable(
               showCheckboxColumn: true, // Esto oculta las casillas de selección
               horizontalMargin: 5, // Ajusta este valor según tus preferencias
@@ -279,8 +431,39 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
                       if (confirmarBorrado == true) {
                         bool imagenBorrada = await borrarImagen(imageUrl);
                         if (imagenBorrada) {
-                          _cargarMedicionesTrabajador(
-                              selectedMedicion['nombreTrabajador']);
+                          // _cargarMedicionesTrabajador(
+                          //     selectedMedicion['nombreTrabajador']);
+                          switch (obsion) {
+                            case 'Anual':
+                              _cargarMedicionesTrabajador(
+                                  selectedMedicion['nombreTrabajador'],
+                                  anio: pickedDateYear?.year);
+                              break;
+                            case 'Mensual':
+                              _cargarMedicionesTrabajador(
+                                  selectedMedicion['nombreTrabajador'],
+                                  mesEspecifico: pickedDateMonth);
+                              break;
+                            case 'Personalizado':
+                              _cargarMedicionesTrabajador(
+                                  selectedMedicion['nombreTrabajador'],
+                                  fechaInicio: pickedDatesQuincenal?.start,
+                                  fechaFin: pickedDatesQuincenal?.end);
+                              break;
+                            case 'Diario':
+                              _cargarMedicionesTrabajador(
+                                  selectedMedicion['nombreTrabajador'],
+                                  diaEspecifico: pickedDateDaily);
+                              break;
+                            case 'Total histórico':
+                              _cargarMedicionesTrabajador(
+                                  selectedMedicion['nombreTrabajador'],
+                                  cargarTodo: true);
+                              break;
+                            default:
+                              // Opción no válida
+                              break;
+                          }
                         }
                       }
                     }
@@ -325,10 +508,33 @@ class _MiPantallaDataTableState extends State<ResultadosTrabajador> {
                       );
 
                       if (confirmarBorrado == true) {
-                        bool imagenBorrada =
-                            await borrarImagenesTrabajador(nombreTrabajador);
-                        if (imagenBorrada) {
-                          _cargarMedicionesTrabajador(nombreTrabajador);
+                        for (String imageUrl in imagenesTrabajador) {
+                          bool imagenBorrada = await borrarImagen(imageUrl);
+                        }
+                        switch (obsion) {
+                          case 'Anual':
+                            _cargarMedicionesTrabajador(nombreTrabajador,
+                                anio: pickedDateYear?.year);
+                            break;
+                          case 'Mensual':
+                            _cargarMedicionesTrabajador(nombreTrabajador,
+                                mesEspecifico: pickedDateMonth);
+                            break;
+                          case 'Personalizado':
+                            _cargarMedicionesTrabajador(nombreTrabajador,
+                                fechaInicio: pickedDatesQuincenal?.start,
+                                fechaFin: pickedDatesQuincenal?.end);
+                            break;
+                          case 'Diario':
+                            _cargarMedicionesTrabajador(nombreTrabajador,
+                                diaEspecifico: pickedDateDaily);
+                            break;
+                          case 'Total histórico':
+                            _cargarMedicionesTrabajador(nombreTrabajador,
+                                cargarTodo: true);
+                            break;
+                          default:
+                            break;
                         }
                       }
                     }

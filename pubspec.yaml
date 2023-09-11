@@ -50,6 +50,7 @@ dependencies:
   intl: ^0.18.1
   flutter_image_compress: ^2.0.4
   restart_app: ^1.2.1
+  month_picker_dialog: ^2.0.2
 
 dev_dependencies:
   flutter_test:
