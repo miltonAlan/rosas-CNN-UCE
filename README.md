@@ -1,16 +1,35 @@
-# ejemplo
+# Aplicación de Medición de Objetos con Flutter y IA
 
-A new Flutter project.
+Esta es una aplicación desarrollada en Flutter como parte de un proyecto integrador para la Universidad Central del Ecuador. La aplicación utiliza inteligencia artificial para medir objetos (rosas) a través de la cámara de tu dispositivo móvil y se integra con un API REST para proporcionar datos adicionales y funcionalidades.
 
-## Getting Started
+## Funcionalidades Principales
 
-This project is a starting point for a Flutter application.
+- **Medición de Objetos:** Utiliza la cámara de tu dispositivo para medir objetos en tiempo real. Simplemente apunta la cámara al objeto y obtén medidas precisas.
 
-A few resources to get you started if this is your first Flutter project:
+- **Inteligencia Artificial:** La aplicación utiliza modelos de aprendizaje automático para calcular las dimensiones de los objetos. La precisión puede variar según el modelo utilizado.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Integración de API REST:** La aplicación se conecta a un servidor a través de un API REST para acceder a información adicional sobre los objetos medidos, como descripciones, precios y más.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **Historial de Mediciones:** Guarda un historial de las mediciones realizadas para su posterior consulta o comparación.
+
+## Requisitos de Instalación
+
+- Flutter SDK: Asegúrate de tener Flutter instalado. Puedes obtenerlo [aquí](https://flutter.dev/docs/get-started/install).
+
+- Dispositivo Móvil o Emulador: La aplicación utiliza la cámara del dispositivo, por lo que necesitas un dispositivo móvil o un emulador con cámara habilitada.
+
+- API REST: Configura la URL del API REST en el archivo `lib/api.dart` antes de compilar la aplicación.
+
+## Cómo Usar
+
+1. Clona este repositorio en tu máquina local.
+
+2. Abre una terminal en la carpeta del proyecto y ejecuta `flutter pub get` para instalar las dependencias.
+
+3. Configura la URL del API REST en el archivo `lib/api.dart`.
+
+4. Ejecuta la aplicación en tu dispositivo o emulador mediante `flutter run`.
+
+## Contribuciones
+
+Si deseas contribuir a este proyecto, no dudes en abrir un *issue* o enviar una solicitud de extracción (*pull request*).
