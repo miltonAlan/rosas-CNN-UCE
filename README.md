@@ -12,6 +12,14 @@ Esta es una aplicación desarrollada en Flutter como parte de un proyecto integr
 
 - **Historial de Mediciones:** Guarda un historial de las mediciones realizadas para su posterior consulta o comparación.
 
+## Vista previa
+![Vista previa](https://raw.githubusercontent.com/miltonAlan/rosas-CNN-UCE/master/capture1.png "Vista previa 1")
+![Vista previa](https://raw.githubusercontent.com/miltonAlan/rosas-CNN-UCE/master/capture2.png "Vista previa 2")
+![Vista previa](https://raw.githubusercontent.com/miltonAlan/rosas-CNN-UCE/master/capture3.png "Vista previa 3")
+![Vista previa](https://raw.githubusercontent.com/miltonAlan/rosas-CNN-UCE/master/capture4.png "Vista previa 4")
+![Vista previa](https://raw.githubusercontent.com/miltonAlan/rosas-CNN-UCE/master/capture5.png "Vista previa 5")
+![Vista previa](https://raw.githubusercontent.com/miltonAlan/rosas-CNN-UCE/master/capture6.png "Vista previa 6")
+
 ## Requisitos de Instalación
 
 - Flutter SDK: Asegúrate de tener Flutter instalado. Puedes obtenerlo [aquí](https://flutter.dev/docs/get-started/install).
