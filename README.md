@@ -18,7 +18,7 @@ Esta es una aplicación desarrollada en Flutter como parte de un proyecto integr
 
 - Dispositivo Móvil o Emulador: La aplicación utiliza la cámara del dispositivo, por lo que necesitas un dispositivo móvil o un emulador con cámara habilitada.
 
-- API REST: Configura la URL del API REST en el archivo `lib/api.dart` antes de compilar la aplicación.
+- API REST: Configura la URL del API REST en el archivo `lib/api.dart` antes de compilar la aplicación. Puedes obtener la aplicación en el siguiente repositorio: [https://github.com/miltonAlan/Api-Rest-Rosas-CNN](https://github.com/miltonAlan/Api-Rest-Rosas-CNN).
 
 ## Cómo Usar
 
